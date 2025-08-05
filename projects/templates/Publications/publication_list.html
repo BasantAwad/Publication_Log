@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Publications</h1>
+    <ul class="space-y-4">
+        {% for pub in publications %}
+        <li class="p-4 bg-white rounded shadow hover:shadow-md transition">
+            <a href="{% url 'publication_detail' pk=pub.pk %}" class="text-xl font-semibold text-blue-700 hover:underline">
+                {{ pub.title }}
+            </a>
+            <p class="text-sm text-gray-600">{{ pub.year }} - {{ pub.type }}</p>
+        </li>
+        {% empty %}
+        <li>No Publications untill now</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container p-4">
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">{{ project.title }}</h2>
+
+    <div class="bg-white p-6 rounded-lg shadow space-y-3 text-gray-700">
+        <p><strong>Created:</strong> {{ project.created }}</p>
+        <p><strong>Team:</strong> {{ project.team }}</p>
+        <p><strong>Summary:</strong> {{ project.summary }}</p>
+        <p><strong>Duration:</strong> {{ project.duration }}</p>
+        <p><strong>Domain:</strong> {{ project.domain }}</p>
+        <p><strong>Scientific Case:</strong> {{ project.scientific_case }}</p>
+
+        {% if publications %}
+            <div class="mt-6">
+                <p class="text-xl font-semibold text-gray-800 mb-3">
+                    <strong>📚 Publications ({{ publications|length }})</strong>
+                </p>
+                <ul class="space-y-3">
+                  {% for pub in publications %}
+    <li class="bg-gray-50 border rounded p-3 hover:shadow transition">
+        <a href="{% url 'publication_detail' pub.id %}" class="text-blue-600 hover:underline font-medium text-lg">
+            {{ pub.title }}
+        </a>
+        <p class="text-sm text-gray-600 mt-1">
+            {{ pub.year }} | {{ pub.type }}
+            {% if pub.authors.exists %}
+                | 👥 {{ pub.authors.all|join:", " }}
+            {% else %}
+                | <span class="text-gray-400 italic">No authors</span>
+            {% endif %}
+        </p>
+    </li>
+{% endfor %}
+  
+
+                </ul>
+            </div>
+        {% else %}
+            <p class="mt-6 text-gray-500 italic">No publications added yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="mt-8 flex flex-wrap gap-4">
+        <a href="{% url 'project_list' %}">
+            <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2 rounded-lg shadow-sm transition-all">
+                🔙 Back to Projects
+            </button>
+        </a>
+
+        <a href="{% url 'add_publication' project.id %}">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg shadow-md transition-all">
+                ➕ Add Publication
+            </button>
+        </a>
+    </div>
+</div>
+{% endblock %}

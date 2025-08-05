@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
+  <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">👤 User Profile</h1>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
+  </form>
+
+  <hr class="my-6">
+
+  <ul class="space-y-2 text-gray-800">
+    <li><strong>🆔 ID:</strong> {{ user.id }}</li>
+    <li><strong>📧 Email:</strong> {{ user.email }}</li>
+    <li><strong>📅 Joined:</strong> {{ user.date_joined|date:"F d, Y - H:i" }}</li>
+  </ul>
+
+  {% if messages %}
+    <div class="mt-4 text-green-600">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

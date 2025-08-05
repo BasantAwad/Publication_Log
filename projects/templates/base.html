@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Projects Page{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+  <!-- ✅ Navbar -->
+  <nav class="navbar">
+    <div class="logo">
+      <img src="{% static 'images/BA.jpeg' %}" alt="BA Logo">
+    </div>
+    <ul class="nav-links">
+       <li><a href="{% url 'project_list' %}">Home</a></li>
+      <li><a href="{% url 'project_list' %}">Projects</a></li>
+       <li><a href="{% url 'publication_list' %}">Publications</a></li>
+         {% if user.is_authenticated %}
+  <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+{% endif %}
+    </ul>
+  </nav>
+
+  <!-- ✅ Page Content -->
+  <div class="container">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+
+  
+
+
+
+
+</body>
+</html>

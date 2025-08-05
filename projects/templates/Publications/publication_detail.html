@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    body {
+        background-color: #f3f4f6;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .publication-container {
+        max-width: 720px;
+        margin: 40px auto;
+        background: white;
+        padding: 32px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+    }
+
+    .publication-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 12px;
+        margin-bottom: 24px;
+    }
+
+    .publication-image {
+        width: 100%;
+        max-height: 350px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+    }
+
+    .publication-file {
+        margin-bottom: 20px;
+    }
+
+    .download-btn {
+        background-color: #2563eb;
+        color: white;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 15px;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .download-btn:hover {
+        background-color: #1d4ed8;
+        transform: scale(1.02);
+    }
+
+    .publication-info p {
+        font-size: 17px;
+        color: #374151;
+        margin-bottom: 10px;
+    }
+
+    .publication-info span {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .publication-info a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+
+    .publication-info a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="publication-container">
+
+    <h1 class="publication-title">{{ publication.title }}</h1>
+
+    {% if publication.image %}
+        <img src="{{ publication.image.url }}" alt="Publication Image" class="publication-image">
+    {% endif %}
+
+    {% if publication.file %}
+        <div class="publication-file">
+            <a href="{{ publication.file.url }}" target="_blank" class="download-btn">📄 Download File</a>
+        </div>
+    {% endif %}
+
+    <div class="publication-info">
+        <p><span>📅 Year:</span> {{ publication.year }}</p>
+        <p><span>📄 Type:</span> {{ publication.type }}</p>
+        <p><span>🔗 URL:</span> 
+            <a href="{{ publication.url }}" target="_blank">{{ publication.url }}</a>
+        </p>
+        <p><span>👥 Authors:</span>
+    {% with publication.authors.all as authors %}
+        {% if authors %}
+            {% for author in authors %}
+                {{ author.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        {% else %}
+            No authors listed.
+        {% endif %}
+    {% endwith %}
+</p>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

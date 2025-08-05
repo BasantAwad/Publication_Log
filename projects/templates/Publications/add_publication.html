@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        background: #f3f4f6;
+    }
+
+    .form-wrapper {
+        max-width: 800px;
+        margin: 30px auto;
+        background: #fff;
+        padding: 24px 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1e3a8a;
+        margin-bottom: 18px;
+        border-left: 4px solid #3b82f6;
+        padding-left: 12px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        color: #374151;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        background-color: #fff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #3b82f6;
+        outline: none;
+    }
+
+    .form-group small {
+        color: #6b7280;
+        font-size: 11.5px;
+    }
+
+    .form-group .error {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .radio-group {
+        margin-top: 8px;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .radio-option input[type="checkbox"] {
+        margin-right: 10px;
+        accent-color: #2563eb;
+        width: 16px;
+        height: 16px;
+    }
+
+    .btn-submit {
+        background-color: #2563eb;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: background 0.3s ease, transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background-color: #1e3a8a;
+        transform: scale(1.01);
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 16px;
+        font-size: 13px;
+        color: #2563eb;
+        text-decoration: none;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .checkbox-option {
+    background-color: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 6px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #374151;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+
+    .checkbox-option input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #2563eb;
+    }
+
+    .checkbox-option:hover {
+        background-color: #e0f2fe;
+    }
+</style>
+
+<div class="form-wrapper">
+    <div class="form-title">
+        ➕ Add Publication to <span style="color:#2563eb;">{{ project.title }}</span>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% for field in form.visible_fields %}
+            {% if field.name == "authors" %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="checkbox-group">
+                        {% for subwidget in field %}
+                        <label class="checkbox-option">
+                            {{ subwidget.tag }} {{ subwidget.choice_label }}
+                        </label>
+                    {% endfor %}
+                </div>
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn-submit">💾 Save Publication</button>
+    </form>
+
+    <a href="{% url 'project_detail' project.id %}" class="back-link">← Back to Project Details</a>
+</div>
+{% endblock %}
