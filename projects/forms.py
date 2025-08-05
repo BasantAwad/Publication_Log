@@ -26,7 +26,7 @@ class PublicationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if project:
-            team_names = [name.strip() for name in project.team.split(',')]
+            team_names = [name.strip() for name in project.collaborators.split(',')]
             authors = [Author.objects.get_or_create(name=name)[0] for name in team_names]
             self.fields['authors'].queryset = Author.objects.filter(id__in=[a.id for a in authors])
 
@@ -75,7 +75,7 @@ class UploadPublicationForm(forms.ModelForm):
 
     class Meta:
         model = Publication
-        fields = ['name', 'abstract', 'collaborators', 'file', 'download_link']
+        fields = ['title', 'abstract', 'collaborators', 'file', 'url']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

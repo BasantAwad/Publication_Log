@@ -20,19 +20,21 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
-from django.urls import path
-from . import views
+from projects import views  # for the custom view below
 
 urlpatterns = [
-    path('', lambda request: redirect('project_list')), 
+    path('', lambda request: redirect('project_list')),  # Redirect root to project list
     path('admin/', admin.site.urls),
-    path('projects/', include('projects.urls')),
-    path('publications/', include('projects.urls')),
-    path("upload/<str:token>/", views.upload_publication, name="upload_publication"),
+    path('', include('projects.urls')),  # Mount all routes from projects.urls directly
+    path("upload/<str:token>/", views.add_publication, name="add_publication"),  # standalone
+     path('accounts/', include('django.contrib.auth.urls')),
+     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
+     path("admin-dashboard/accept/<int:pk>/", views.accept_match_request, name="accept_match_request"),
+
+
 
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 

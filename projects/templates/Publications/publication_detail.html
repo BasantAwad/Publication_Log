@@ -97,14 +97,14 @@
         <p><span>🔗 URL:</span> 
             <a href="{{ publication.url }}" target="_blank">{{ publication.url }}</a>
         </p>
-        <p><span>👥 Authors:</span>
-    {% with publication.authors.all as authors %}
-        {% if authors %}
-            {% for author in authors %}
-                {{ author.name }}{% if not forloop.last %}, {% endif %}
+        <p><span>👥 Collaborators:</span>
+    {% with publication.collaborators.all as collaborators %}
+        {% if collaborators %}
+            {% for collaborators in collaborators %}
+                {{ collaborators.name }}{% if not forloop.last %}, {% endif %}
             {% endfor %}
         {% else %}
-            No authors listed.
+            No collaborators listed.
         {% endif %}
     {% endwith %}
 </p>

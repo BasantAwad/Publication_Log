@@ -1,24 +1,22 @@
 from django.contrib import admin
 from .models import Project, Publication, Author
 from django.contrib import admin
-from .models import HarvestMatchCandidate
+from .models import MatchRequest
 
 admin.site.register(Project)
 admin.site.register(Publication)
 admin.site.register(Author)
 
-@admin.register(HarvestMatchCandidate)
-class HarvestMatchCandidateAdmin(admin.ModelAdmin):
-    list_display = ('publication', 'project', 'confidence_score', 'confirmed_by_admin')
-    actions = ['confirm_matches', 'reject_matches']
+@admin.register(MatchRequest)
+class MatchRequestAdmin(admin.ModelAdmin):
+    list_display = ('publication', 'match_title', 'match_score', 'approved', 'created_at')
+    list_filter = ('approved',)
+    actions = ['approve_match', 'reject_match']
 
-    def confirm_matches(self, request, queryset):
-        updated = queryset.update(confirmed_by_admin=True)
-        self.message_user(request, f"{updated} match(es) confirmed.")
+    @admin.action(description="Mark selected matches as approved")
+    def approve_match(self, request, queryset):
+        queryset.update(approved=True)
 
-    def reject_matches(self, request, queryset):
-        updated = queryset.update(confirmed_by_admin=False)
-        self.message_user(request, f"{updated} match(es) rejected.")
-
-    confirm_matches.short_description = "Confirm selected matches"
-    reject_matches.short_description = "Reject selected matches"
+    @admin.action(description="Mark selected matches as rejected")
+    def reject_match(self, request, queryset):
+        queryset.update(approved=False)

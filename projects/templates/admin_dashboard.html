@@ -1,0 +1,17 @@
+<h1>Admin Match Requests</h1>
+
+{% for request in match_requests %}
+  <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+    <p><strong>Project:</strong> {{ request.project.title }}</p>
+    <p><strong>Publication:</strong> {{ request.publication.title }}</p>
+    <p><strong>Similarity:</strong> {{ request.similarity }}</p>
+    <p><strong>Shared Authors:</strong> {{ request.shared_authors }}</p>
+    <form method="post" action="{% url 'accept_match_request' request.id %}">
+      {% csrf_token %}
+      <button name="decision" value="yes">Accept</button>
+      <button name="decision" value="no">Reject</button>
+    </form>
+  </div>
+{% empty %}
+  <p>No pending match requests.</p>
+{% endfor %}

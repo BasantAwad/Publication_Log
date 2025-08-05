@@ -5,9 +5,11 @@ from django.contrib import messages
 from .models import Project, Publication
 from .forms import PublicationForm
 from .forms import UploadPublicationForm
-from .models import Project, Publication 
-from .models import Publication
-from .forms import fetch_and_save_file_from_url
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.contrib.admin.views.decorators import staff_member_required
+from projects.models import MatchRequest
+from django.views.decorators.http import require_POST
 
 
 
@@ -46,15 +48,15 @@ def project_list(request):
 
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
-    publications = project.publications.prefetch_related('authors')  # تحسين الأداء
+    publications = project.publications.prefetch_related('collaborators')  # تحسين الأداء
     return render(request, 'projects/project_detail.html', {
         'project': project,
         'publications': publications
     })
 
 @login_required
-def add_publication(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
+def add_publication(request, token):
+    project = get_object_or_404(Project, id=token)
     url_validation = True
 
     if request.method == 'POST':
@@ -114,3 +116,29 @@ def user_dashboard(request):
         'form': form
     })
 
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('project_list')  # or any landing page
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
+
+
+@staff_member_required
+def admin_dashboard(request):
+    pending_requests = MatchRequest.objects.filter(reviewed=False).order_by("-created_at")
+    return render(request, "admin_dashboard.html", {"match_requests": pending_requests})
+
+@require_POST
+@staff_member_required
+def accept_match_request(request, pk):
+    match = get_object_or_404(MatchRequest, pk=pk)
+    decision = request.POST.get("decision")
+    match.reviewed = True
+    match.accepted = decision == "yes"
+    match.save()
+    return redirect("admin_dashboard")
