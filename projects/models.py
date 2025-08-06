@@ -1,10 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+
 
 class Project(models.Model):
     title = models.CharField(max_length=200)
-    created = models.DateField()
-    collaborators  = models.CharField(max_length=300)
+    created= models.DateField()
+    team  = models.CharField(max_length=300)
     abstract = models.TextField(default="No abstract yet")
     duration = models.CharField(max_length=100)
     domain = models.CharField(max_length=100)
@@ -15,21 +16,45 @@ class Project(models.Model):
 
 class Author(models.Model):
     name = models.CharField(max_length=200)
+    email=models.EmailField()
 
     def __str__(self):
         return self.name
 
 
 PUBLICATION_TYPES = [
-    ('Journal', 'Journal'),
-    ('Conference', 'Conference'),
-    ('Workshop', 'Workshop'),
-    ('Other', 'Other'),
+    ('Journal', 'Journal Article'),  
+    ('Conference', 'Conference Paper'),  
+    ('Workshop', 'Workshop Paper'),  
+    ('Preprint', 'Preprint'),  
+    ('Thesis', 'Thesis/Dissertation'),  
+    ('Book', 'Book'),  
+    ('Book Chapter', 'Book Chapter'),  
+    ('Technical Report', 'Technical Report'),  
+    ('Patent', 'Patent'),  
+    ('Poster', 'Poster'),  
+    ('Abstract', 'Abstract'),  
+    ('Editorial', 'Editorial'),  
+    ('Review', 'Review Article'),  
+    ('Magazine', 'Magazine Article'),  
+    ('Blog', 'Blog Post'),  
+    ('White Paper', 'White Paper'),  
+    ('Dataset', 'Dataset'),  
+    ('Software', 'Software/Code'),  
+    ('Standard', 'Standard/Specification'),  
+    ('Symposium', 'Symposium'),  
+    ('Tutorial', 'Tutorial'),  
+    ('Keynote', 'Keynote Speech'),  
+    ('Invited Talk', 'Invited Talk'),  
+    ('Panel', 'Panel Discussion'),  
+    ('Exhibition', 'Exhibition'),  
+    ('Other', 'Other'),  
 ]
 
 class Publication(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='publications')
     title = models.CharField(max_length=200)
+    author = models.CharField(Author)
     url = models.URLField(blank=True)
     year = models.PositiveIntegerField()
     file = models.FileField(upload_to='publications/files/', blank=True)
@@ -40,6 +65,9 @@ class Publication(models.Model):
     abstract = models.TextField(default="No abstract yet")
 
 
+    def clean(self):
+        if not self.pdf_file and not self.download_link:
+            raise ValidationError("Either upload a file or provide a download link.")
 
     def __str__(self):
         return self.title
@@ -55,20 +83,23 @@ class HarvestMatchCandidate(models.Model):
     def __str__(self):
         return f"AI Match: {self.publication.title} ↔ {self.project.title}"
 
+def get_default_project():
+    try:
+        return Project.objects.first().id
+    except:
+        return None
+
 class MatchRequest(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, default=get_default_project)
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
     match_title = models.CharField(max_length=255)
-    match_authors = models.TextField()
-    match_abstract = models.TextField(blank=True, null=True)
     match_score = models.FloatField()
-    approved = models.BooleanField(null=True, blank=True)  # None = not reviewed yet
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def is_reviewed(self):
-        return self.approved is not None
+    match_authors = models.TextField()
+    approved = models.BooleanField(null=True)
 
     def __str__(self):
-        return f"Match for '{self.publication.title}' | Approved: {self.approved}"
+        return f"MatchRequest({self.project.title} ← {self.publication.title})"
+
 
 
 

@@ -4,13 +4,12 @@ from .forms import UserUpdateForm
 from django.contrib import messages
 from .models import Project, Publication
 from .forms import PublicationForm
-from .forms import UploadPublicationForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.admin.views.decorators import staff_member_required
 from projects.models import MatchRequest
 from django.views.decorators.http import require_POST
-
+from .email import notify_invalid_publication_url
 
 
 def project_list(request):
@@ -48,7 +47,7 @@ def project_list(request):
 
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
-    publications = project.publications.prefetch_related('collaborators')  # تحسين الأداء
+    publications = project.publications.prefetch_related('collaborators')
     return render(request, 'projects/project_detail.html', {
         'project': project,
         'publications': publications
@@ -57,7 +56,6 @@ def project_detail(request, pk):
 @login_required
 def add_publication(request, token):
     project = get_object_or_404(Project, id=token)
-    url_validation = True
 
     if request.method == 'POST':
         form = PublicationForm(request.POST, request.FILES, project=project)
@@ -65,27 +63,18 @@ def add_publication(request, token):
             publication = form.save(commit=False)
             publication.project = project
             publication.save()
-            form.save_m2m()  # ✅ احفظ الـ many-to-many authors هنا
+            form.save_m2m()
+
+            # ✅ Check for URL validity and trigger email if needed
+            if publication.url:
+                notify_invalid_publication_url(publication)
+
             return redirect('project_detail', pk=project.id)
     else:
         form = PublicationForm(project=project)
 
     return render(request, 'publications/add_publication.html', {'form': form, 'project': project})
 
-
-@login_required
-def upload_publication_view(request):
-    if request.method == 'POST':
-        form = UploadPublicationForm(request.POST, request.FILES)
-        if form.is_valid():
-            publication = form.save(commit=False)
-            publication.user = request.user
-            publication.save()
-            return redirect('upload_success') 
-    else:
-        form = UploadPublicationForm()
-
-    return render(request, 'upload_publication.html', {'form': form})
 
 def publication_list(request):
     publications = Publication.objects.all()
