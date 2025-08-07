@@ -54,7 +54,7 @@ PUBLICATION_TYPES = [
 class Publication(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='publications')
     title = models.CharField(max_length=200)
-    author = models.CharField(Author)
+    author = models.CharField(Author,max_length=200)
     url = models.URLField(blank=True)
     year = models.PositiveIntegerField()
     file = models.FileField(upload_to='publications/files/', blank=True)

@@ -14,8 +14,12 @@ from .models import Publication
 # Email config
 SENDER = 'basantawad014@gmail.com'
 EMAIL_PASSWORD = 'yuef auqt aohq razb'  # App password
-RECEIVER =''
-#Publication.author.email
+RECEIVER_NAME = Publication.author
+try:
+    author_obj = Author.objects.get(name=RECEIVER_NAME)
+    RECEIVER = author_obj.email
+except Author.DoesNotExist:
+    RECEIVER = None  # or some default email
 
 context = ssl.create_default_context()
 
