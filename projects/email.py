@@ -63,9 +63,6 @@ def send_email(subject, html_body):
 # LOGIC 1: 90% Reminder
 # ========================
 def send_90_percent_reminders(projects):
-    with open('reminder.html', 'r', encoding='utf-8') as f:
-        reminder = f.read()
-
     for project in projects:
         global RECEIVER, reminder_date  # Needed for outer variables used in `else` print
         RECEIVER, project_title, start_str, duration = project
@@ -74,7 +71,7 @@ def send_90_percent_reminders(projects):
         reminder_date = start_date + relativedelta(months=duration * 0.9)
 
         if datetime.now() >= reminder_date:
-            with open('reminder.html', 'r', encoding='utf-8') as f:
+            with open('emails/reminder.html', 'r', encoding='utf-8') as f:
                 reminder = f.read()
 
             html_body = personalize_template(reminder, project_title, end_date)
@@ -94,7 +91,7 @@ def send_final_reminders(projects):
         end_date = start_date + relativedelta(months=duration)
 
         if datetime.now() >= end_date:
-            with open('upload_reminder.html', 'r', encoding='utf-8') as f:
+            with open('emails/upload_reminder.html', 'r', encoding='utf-8') as f:
                 reminder = f.read()
 
             html_body = personalize_template(reminder, project_title, end_date)
@@ -110,7 +107,7 @@ def notify_invalid_publication_url(pub, project_title, end_date):
     publication_url_valid = is_valid_download_link(pub.url)
 
     if publication_url_valid == False:
-        with open('issue_email.html', 'r', encoding='utf-8') as f:
+        with open('emails/issue_email.html', 'r', encoding='utf-8') as f:
             issue = f.read()
 
         html_body = personalize_template(issue, project_title, end_date)
@@ -118,3 +115,28 @@ def notify_invalid_publication_url(pub, project_title, end_date):
             subject=f"❗ Issue: Invalid Link for '{project_title}' Publication",
             html_body=html_body
         )
+
+# ========================
+# LOGIC 4: Welcome Email
+# ========================
+def send_welcome_email(user):
+    global RECEIVER
+    RECEIVER = user.email  # Set email for sending
+
+    try:
+        upload_link = generate_upload_link(user.email)
+    except Exception as e:
+        print(f"⚠️ Failed to generate upload link for welcome email: {e}")
+        return
+
+    with open('emails/welcome_email.html', 'r', encoding='utf-8') as f:
+        template = f.read()
+
+    html_body = template.replace("{{ researcher_name }}", user.name.split()[0])
+    html_body = html_body.replace("{{ upload_link }}", upload_link)
+
+    send_email(
+        subject="🎉 Welcome to the Publication Tracker!",
+        html_body=html_body
+    )
+

@@ -1,11 +1,16 @@
 import os
-import requests
-from django import forms
-from .models import Publication, Author
-from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
 from urllib.parse import urlparse
+
+from django import forms
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
+import requests
+
+from .models import Author, Publication
+
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 class PublicationForm(forms.ModelForm):
     new_collaborators = forms.CharField(
@@ -53,7 +58,14 @@ class PublicationForm(forms.ModelForm):
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name']
+        fields = ['first_name', 'last_name', 'email']
+
+class UserCreation(UserCreationForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
 
 
 

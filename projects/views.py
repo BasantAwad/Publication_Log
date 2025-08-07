@@ -4,7 +4,7 @@ from .forms import UserUpdateForm
 from django.contrib import messages
 from .models import Author, Project, Publication
 from .forms import PublicationForm
-from django.contrib.auth.forms import UserCreationForm
+from .forms import UserCreation
 from django.contrib.auth import login
 from django.contrib.admin.views.decorators import staff_member_required
 from projects.models import MatchRequest
@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from .email import notify_invalid_publication_url
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
+from .email import send_welcome_email
 
 
 def project_list(request):
@@ -92,8 +93,8 @@ def publication_detail(request, pk):
 @login_required
 def user_dashboard(request):
     user = request.user
-    publications = Publication.objects.filter(Author=user)
-    collaborated_projects = Project.objects.filter(collaborators=user)
+    publications = Publication.objects.filter(author=user)
+    collaborated_projects = Project.objects.filter(team=user)
 
     if request.method == 'POST':
         form = UserUpdateForm(request.POST, instance=user)
@@ -133,15 +134,16 @@ def custom_login_view(request):
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = UserCreation(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            return redirect('project_list')  # or any landing page
+            login(request, user)  # Automatically log the user in after signup
+            send_welcome_email(user)  # Optional: Only if you defined this function
+            return redirect('project_page')  # Replace with your desired landing page
     else:
-        form = UserCreationForm()
-    return render(request, 'registration/signup.html', {'form': form})
+        form = UserCreation()
 
+    return render(request, 'registration/signup.html', {'form': form})
 
 
 
