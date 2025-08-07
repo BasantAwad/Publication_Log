@@ -1,22 +1,27 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LogoutView
 from . import views
 
 urlpatterns = [
-    # Project-related
-    path('projects/', views.project_list, name='project_list'),
-    path('projects/<int:pk>/', views.project_detail, name='project_detail'),
-
-    # Publication-related
-    path('', views.publication_list, name='publication_list'),  # now at "/"
-    path('<int:pk>/', views.publication_detail, name='publication_detail'),
-
-    # Shared or other
-    path('add/<int:project_id>/', views.add_publication, name='add_publication'),
-    path('dashboard/', views.user_dashboard, name='user_dashboard'),
-    path('login/', views.custom_login_view, name='login'),
+    # Auth & dashboards
     path('signup/', views.signup, name='signup'),
-    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
-    path("admin-dashboard/accept/<int:pk>/", views.accept_match_request, name="accept_match_request"),
+    path('login/', views.login, name='Login'),
+    path('logout/', LogoutView.as_view(next_page='Login'), name='logout'),
+    path('dashboard/', views.user_dashboard, name='User Dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='Admin Dashboard'),
 
+    # Project & publication views
+    path('', views.projects_list, name='Projects'),
+    path('project/<int:pk>/', views.project_detail, name='project_detail'),
+    path('publications/', views.publication_list, name='publication_list'),
+    path('publications/add/', views.add_publication, name='add_publication'),
+    path('publications/<int:pk>/', views.publication_detail, name='publication_detail'),
+    path('publications/upload/', views.add_publication, name='upload_publication'),
+
+    # Password reset 
+    path('reset_password/', auth_views.PasswordResetView.as_view(), name='reset_password'),
+    path('reset_password_sent/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]

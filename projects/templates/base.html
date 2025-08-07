@@ -14,12 +14,12 @@
       <img src="{% static 'images/BA.jpeg' %}" alt="BA Logo">
     </div>
     <ul class="nav-links">
-       <li><a href="{% url 'project_list' %}">Home</a></li>
-       <li><a href="{% url 'login' %}">Login</a></li>
+       <li><a href="{% url 'Projects' %}">Home</a></li>
+       <li><a href="{% url 'Login' %}">Login</a></li>
        {% if user.is_superuser %}
-         <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+         <li><a href="{% url 'Admin Dashboard' %}">Dashboard</a></li>
        {% else %}
-         <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+         <li><a href="{% url 'User Dashboard' %}">Dashboard</a></li>
        {% endif %}
      
     </ul>

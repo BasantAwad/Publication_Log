@@ -2,10 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateForm
 from django.contrib import messages
-from .models import Author, Project, Publication
+from .models import Project, Publication
 from .forms import PublicationForm
 from .forms import UserCreation
-from django.contrib.auth import login
 from django.contrib.admin.views.decorators import staff_member_required
 from projects.models import MatchRequest
 from django.views.decorators.http import require_POST
@@ -15,7 +14,7 @@ from django.contrib.auth import login as auth_login
 from .email import send_welcome_email
 
 
-def project_list(request):
+def projects_list(request):
     projects = Project.objects.all()
 
     search_query = request.GET.get('search', '').lower()
@@ -25,13 +24,10 @@ def project_list(request):
 
     if search_query:
         projects = projects.filter(title__icontains=search_query)
-
     if domain:
         projects = projects.filter(domain=domain)
-
     if year:
         projects = projects.filter(created__year=year)
-
     if sort == 'newest':
         projects = projects.order_by('-created')
     elif sort == 'oldest':
@@ -44,7 +40,8 @@ def project_list(request):
         'selected_year': year,
         'selected_sort': sort,
     }
-    return render(request, 'projects_page.html', context)
+    
+    return render(request, 'projects/projects_page.html', context)
 
 
 
@@ -116,9 +113,9 @@ def user_dashboard(request):
 def admin_dashboard(request):
     # Only fetch requests that haven't been reviewed (i.e., approved is None)
     pending_requests = MatchRequest.objects.filter(approved__isnull=True).order_by("-id")
-    return render(request, "admin_dashboard.html", {"match_requests": pending_requests})
+    return render(request, "registration/admin_dashboard.html", {"match_requests": pending_requests})
 
-def custom_login_view(request):
+def login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
