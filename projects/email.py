@@ -5,10 +5,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from .TokenModels import UploadToken
-from .models import Author
+from .models import UploadToken
 from .utils import is_valid_download_link
 from .models import Publication
+from .models import Author
 import os
 
 
@@ -22,24 +22,33 @@ try:
 except Author.DoesNotExist:
     RECEIVER = None  # or some default email
 
+
+
 context = ssl.create_default_context()
 
-def generate_upload_link(receiver_email):
+def generate_upload_link(RECEIVER):
+    
     try:
-        user = Author.objects.get(email=receiver_email)
+        user = Author.objects.get(email=RECEIVER)
+        token = UploadToken.objects.create(user=user)
+        upload_url = f"{settings.SITE_URL}/upload/{token.token}/"
+        return upload_url
     except Author.DoesNotExist:
-        print(f"⚠️ User not found for email: {receiver_email}")
-        return "#"
-
-    token = UploadToken.objects.create(user=user)
-    upload_url = f"{settings.SITE_URL}/upload/{token.token}/"
-    return upload_url
+        return None  # Or raise an error/log if user not found
 
 def personalize_template(template, title, end_date):
-    html_body = template.replace("{{ researcher_name }}", RECEIVER.split('@')[0])
+    html_body = template.replace("{{ researcher_name }}", RECEIVER_NAME)
     html_body = html_body.replace("{{ project_title }}", title)
     html_body = html_body.replace("{{ project_end_date }}", end_date.strftime("%Y-%m-%d"))
     html_body = html_body.replace("{{ upload_link }}", generate_upload_link(RECEIVER))
+    return html_body
+
+def personalize_welcome_template(template):
+    receiver_name = str(RECEIVER_NAME)  # Ensure it's a string
+    upload_link = generate_upload_link(RECEIVER)
+    
+    html_body = template.replace("{{ researcher_name }}", receiver_name)
+    html_body = html_body.replace("{{ upload_link }}", upload_link)
     return html_body
 
 def send_email(subject, html_body):
@@ -132,12 +141,6 @@ def send_welcome_email(user):
     global RECEIVER
     RECEIVER = user.email  # Set email for sending
 
-    try:
-        upload_link = generate_upload_link(user.email)
-    except Exception as e:
-        print(f"⚠️ Failed to generate upload link for welcome email: {e}")
-        return
-
  # Absolute path to the template file
     template_path = os.path.join(settings.BASE_DIR, 'projects', 'templates', 'emails', 'welcome_email.html')
 
@@ -148,8 +151,7 @@ def send_welcome_email(user):
         print(f"❌ Template file not found: {e}")
         return
 
-    html_body = template.replace("{{ researcher_name }}", user.username.split()[0])
-    html_body = html_body.replace("{{ upload_link }}", upload_link)
+    html_body = personalize_welcome_template(template)
 
     send_email(
         subject="🎉 Welcome to the Publication Tracker!",

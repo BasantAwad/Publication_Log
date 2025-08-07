@@ -14,7 +14,7 @@
       <img src="{% static 'images/BA.jpeg' %}" alt="BA Logo">
     </div>
     <ul class="nav-links">
-       <li><a href="{% url 'Projects' %}">Home</a></li>
+       <li><a href="{% url 'projects_page' %}">Home</a></li>
        <li><a href="{% url 'Login' %}">Login</a></li>
        {% if user.is_superuser %}
          <li><a href="{% url 'Admin Dashboard' %}">Dashboard</a></li>

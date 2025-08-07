@@ -1,16 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Welcome!</title>
+  <meta charset="UTF-8" />
+  <title>Welcome to Publication Log</title>
 </head>
-<body>
-  <h2>Welcome, {{ researcher_name }}! 👋</h2>
-  <p>Thank you for registering in the Publication Log system.</p>
-  <p>You can add your first publication anytime using the link below:</p>
-  <p><a href="{{ upload_link }}">Add a New Publication</a></p>
-  <p>We look forward to seeing your work published!</p>
-  <br>
-  <p>Regards,<br>Publication Tracker Team</p>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+  <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h2 style="color: #0a497b;">Welcome {{ researcher_name }}!</h2>
+
+    <p>
+      We're excited to have you join the <strong>Publication Log</strong> platform. 
+      You can now start tracking your research projects and uploading your publications easily and securely.
+    </p>
+
+    <p>
+      To get started, click the button below to upload your first publication:
+    </p>
+
+    <p style="text-align: center; margin: 30px 0;">
+      <a href="{{ upload_link }}" style="background-color: #0a497b; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Upload Publication</a>
+    </p>
+
+    <p>
+      If you have any questions or need help, don’t hesitate to reach out. We’re here to help!
+    </p>
+
+    <p style="font-size: 13px; color: #777;">This is an automated message from the Publication Log system.</p>
+  </div>
 </body>
 </html>

@@ -12,7 +12,7 @@ urlpatterns = [
     path('admin_dashboard/', views.admin_dashboard, name='Admin Dashboard'),
 
     # Project & publication views
-    path('', views.projects_list, name='Projects'),
+    path('', views.projects_list, name='projects_page'),
     path('project/<int:pk>/', views.project_detail, name='project_detail'),
     path('publications/', views.publication_list, name='publication_list'),
     path('publications/add/<int:project_id>/', views.add_publication, name='add_publication'),

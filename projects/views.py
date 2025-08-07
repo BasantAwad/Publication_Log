@@ -13,7 +13,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
 from .email import send_welcome_email
 
-
 def projects_list(request):
     projects = Project.objects.all()
 
@@ -135,9 +134,8 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             send_welcome_email(user)
-            return redirect('projects_list')  
+            return redirect('projects_page')  
     else:
-        print(form.errors)
         form = UserCreation()
 
     return render(request, 'registration/signup.html', {'form': form})
