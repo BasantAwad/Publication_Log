@@ -1,0 +1,30 @@
+
+    \documentclass{article}
+    \usepackage{graphicx}
+    \title{The Global Carbon Budget 1959-2023}
+    \author{Courtney Day et al.}
+    \date{2021}
+    
+    \begin{document}
+    \maketitle
+    
+    \section{Abstract}
+    This study addresses critical challenges in climate science through novel application of renewables. Our approach demonstrates significant improvements in scalability compared to existing methods. The results have important implications for renewables and open new directions for future research in climate science.
+    
+    \section{Introduction}
+    This paper addresses climate modeling in climate science. Recent advances have enabled new approaches, but
+    limitations remain in carbon capture.
+    
+    \section{Methods}
+    We developed a novel approach combining carbon capture with global warming,
+    implemented using Qiskit.
+    
+    \section{Results}
+    Our evaluation shows 9\% improvement in F1 score compared to
+    existing techniques (p<0.04).
+    
+    \section{Conclusion}
+    These findings demonstrate significant advances in climate science, opening new
+    directions including renewables applications.
+    \end{document}
+    

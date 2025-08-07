@@ -1,0 +1,30 @@
+
+    \documentclass{article}
+    \usepackage{graphicx}
+    \title{Closed-Loop Deep Brain Stimulation for Parkinson's Disease}
+    \author{Samuel Delgado et al.}
+    \date{2020}
+    
+    \begin{document}
+    \maketitle
+    
+    \section{Abstract}
+    This study addresses critical challenges in neuroscience using neuroimaging and neuroimaging. Our approach demonstrates significant improvements in accuracy compared to existing methods. The results have important implications for brain-computer interface and open new directions for future research in neuroscience.
+    
+    \section{Introduction}
+    This paper addresses neuroimaging in neuroscience. Recent advances have enabled new approaches, but
+    limitations remain in brain-computer interface.
+    
+    \section{Methods}
+    We developed a novel approach combining brain-computer interface with neural circuits,
+    implemented using Qiskit.
+    
+    \section{Results}
+    Our evaluation shows 47\% improvement in accuracy compared to
+    existing techniques (p<0.05).
+    
+    \section{Conclusion}
+    These findings demonstrate significant advances in neuroscience, opening new
+    directions including brain-computer interface applications.
+    \end{document}
+    

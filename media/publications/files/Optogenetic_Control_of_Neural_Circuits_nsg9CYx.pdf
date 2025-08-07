@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{Optogenetic Control of Neural Circuits}
+    \author{Juan Fowler et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in neuroscience combining neuroimaging with neural circuits. Our approach demonstrates significant improvements in efficiency compared to existing methods. The results have important implications for brain-computer interface and open new directions for future research in neuroscience.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of neuroscience faces growing challenges with brain-computer interface scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include neural circuits and cognitive science, but lack neural circuits...
+    \end{document}
+    

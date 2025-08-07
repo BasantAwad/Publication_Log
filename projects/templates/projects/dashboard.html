@@ -2,7 +2,7 @@
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
+<div class="max-w-4xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
   <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">👤 User Profile</h1>
 
   <form method="post" class="space-y-4">
@@ -11,9 +11,9 @@
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
   </form>
 
-  <hr class="my-6">
+  <hr class="my-6 border-gray-300">
 
-  <ul class="space-y-2 text-gray-800">
+  <ul class="space-y-2 text-gray-800 text-sm">
     <li><strong>🆔 ID:</strong> {{ user.id }}</li>
     <li><strong>📧 Email:</strong> {{ user.email }}</li>
     <li><strong>📅 Joined:</strong> {{ user.date_joined|date:"F d, Y - H:i" }}</li>
@@ -25,6 +25,43 @@
         <p>{{ message }}</p>
       {% endfor %}
     </div>
+  {% endif %}
+
+  {% if collaborator_projects %}
+    <div class="mt-10">
+      <h2 class="text-2xl font-semibold mb-4 text-purple-700">🧑‍🤝‍🧑 Collaborator in Projects</h2>
+      <ul class="space-y-3">
+        {% for project in collaborator_projects %}
+          <li class="bg-gray-100 p-4 rounded shadow">
+            <h3 class="font-semibold text-lg text-blue-800">{{ project.title }}</h3>
+            <p class="text-sm text-gray-600">Start Date: {{ project.start_date }}</p>
+            <p class="text-sm text-gray-600">Duration: {{ project.duration }} months</p>
+            <p class="text-sm text-gray-600">Owner: {{ project.owner.username }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <p class="mt-8 text-gray-500">You are not a collaborator in any projects yet.</p>
+  {% endif %}
+
+  {% if user_publications %}
+    <div class="mt-10">
+      <h2 class="text-2xl font-semibold mb-4 text-green-700">📚 Your Publications</h2>
+      <ul class="space-y-3">
+        {% for publication in user_publications %}
+          <li class="bg-gray-50 p-4 rounded shadow">
+            <h3 class="font-semibold text-lg text-blue-700">{{ publication.title }}</h3>
+            <p class="text-sm text-gray-600">Project: {{ publication.project.title }}</p>
+            <p class="text-sm text-gray-600">Type: {{ publication.publication_type }}</p>
+            <p class="text-sm text-gray-600">Year: {{ publication.publication_year }}</p>
+            <p class="text-sm text-gray-600">Uploaded: {{ publication.upload_date|date:"F d, Y" }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <p class="mt-8 text-gray-500">You have not uploaded any publications yet.</p>
   {% endif %}
 </div>
 {% endblock %}

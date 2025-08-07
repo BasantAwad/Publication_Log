@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{Arctic Amplification of Climate Change}
+    \author{Danielle James et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in climate science combining carbon capture with global warming. Our approach demonstrates significant improvements in accuracy compared to existing methods. The results have important implications for carbon capture and open new directions for future research in climate science.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of climate science faces growing challenges with carbon capture scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include global warming and carbon capture, but lack carbon capture...
+    \end{document}
+    

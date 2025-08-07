@@ -29,10 +29,10 @@ def normalize_authors(authors_list):
 
 def match_projects_and_papers(publication=None, user=None, threshold=0.65, top_k=3):
     # Fetch data from DB
-    projects = Project.objects.all().values("id", "title", "collaborators", "created")
-    papers = Publication.objects.all().values("id", "title", "abstract", "collaborators", "published_date")
+    projects = Project.objects.all().values("id", "title", "team", "created")
+    papers = Publication.objects.all().values("id", "title", "abstract", "collaborators", "uploaded_at")
 
-    if not publication or not project:
+    if not projects or not papers:
         return
 
     # Create DataFrames

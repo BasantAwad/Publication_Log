@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{Swarm Robotics: From Algorithms to Applications}
+    \author{Fernando Bishop et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in robotics through novel application of human-robot interaction. Our approach demonstrates significant improvements in accuracy compared to existing methods. The results have important implications for autonomous systems and open new directions for future research in robotics.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of robotics faces growing challenges with swarm robotics scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include autonomous systems and human-robot interaction, but lack human-robot interaction...
+    \end{document}
+    

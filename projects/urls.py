@@ -14,9 +14,8 @@ urlpatterns = [
     # Shared or other
     path('add/<int:project_id>/', views.add_publication, name='add_publication'),
     path('dashboard/', views.user_dashboard, name='user_dashboard'),
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('login/', views.custom_login_view, name='login'),
     path('signup/', views.signup, name='signup'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-dashboard/accept/<int:pk>/", views.accept_match_request, name="accept_match_request"),
 

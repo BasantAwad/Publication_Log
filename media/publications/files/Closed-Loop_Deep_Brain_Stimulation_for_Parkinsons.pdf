@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{Closed-Loop Deep Brain Stimulation for Parkinson's Disease}
+    \author{Monique Dixon et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in neuroscience through novel application of neuroimaging. Our approach demonstrates significant improvements in accuracy compared to existing methods. The results have important implications for cognitive science and open new directions for future research in neuroscience.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of neuroscience faces growing challenges with neural circuits scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include cognitive science and cognitive science, but lack neural circuits...
+    \end{document}
+    

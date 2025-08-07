@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{Self-Supervised Learning for Robotic Grasping}
+    \author{Dustin Townsend et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in robotics through novel application of human-robot interaction. Our approach demonstrates significant improvements in scalability compared to existing methods. The results have important implications for swarm robotics and open new directions for future research in robotics.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of robotics faces growing challenges with robot learning scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include swarm robotics and robot learning, but lack human-robot interaction...
+    \end{document}
+    

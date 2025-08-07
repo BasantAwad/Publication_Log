@@ -1,0 +1,30 @@
+
+    \documentclass{article}
+    \usepackage{graphicx}
+    \title{Deep Residual Learning for Image Recognition}
+    \author{Danielle Levy et al.}
+    \date{2025}
+    
+    \begin{document}
+    \maketitle
+    
+    \section{Abstract}
+    This study addresses critical challenges in machine learning through novel application of neural networks. Our approach demonstrates significant improvements in scalability compared to existing methods. The results have important implications for deep learning and open new directions for future research in machine learning.
+    
+    \section{Introduction}
+    This paper addresses neural networks in machine learning. Recent advances have enabled new approaches, but
+    limitations remain in NLP.
+    
+    \section{Methods}
+    We developed a novel approach combining deep learning with NLP,
+    implemented using TensorFlow.
+    
+    \section{Results}
+    Our evaluation shows 51\% improvement in F1 score compared to
+    existing techniques (p<0.03).
+    
+    \section{Conclusion}
+    These findings demonstrate significant advances in machine learning, opening new
+    directions including deep learning applications.
+    \end{document}
+    

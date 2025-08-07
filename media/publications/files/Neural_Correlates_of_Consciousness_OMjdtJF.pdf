@@ -1,0 +1,30 @@
+
+    \documentclass{article}
+    \usepackage{graphicx}
+    \title{Neural Correlates of Consciousness}
+    \author{Bethany Green et al.}
+    \date{2019}
+    
+    \begin{document}
+    \maketitle
+    
+    \section{Abstract}
+    This study addresses critical challenges in neuroscience using neuroimaging and brain-computer interface. Our approach demonstrates significant improvements in efficiency compared to existing methods. The results have important implications for brain-computer interface and open new directions for future research in neuroscience.
+    
+    \section{Introduction}
+    This paper addresses brain-computer interface in neuroscience. Recent advances have enabled new approaches, but
+    limitations remain in brain-computer interface.
+    
+    \section{Methods}
+    We developed a novel approach combining brain-computer interface with cognitive science,
+    implemented using Qiskit.
+    
+    \section{Results}
+    Our evaluation shows 29\% improvement in latency compared to
+    existing techniques (p<0.01).
+    
+    \section{Conclusion}
+    These findings demonstrate significant advances in neuroscience, opening new
+    directions including cognitive science applications.
+    \end{document}
+    

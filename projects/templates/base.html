@@ -15,11 +15,13 @@
     </div>
     <ul class="nav-links">
        <li><a href="{% url 'project_list' %}">Home</a></li>
-      <li><a href="{% url 'project_list' %}">Projects</a></li>
-       <li><a href="{% url 'publication_list' %}">Publications</a></li>
-         {% if user.is_authenticated %}
-  <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
-{% endif %}
+       <li><a href="{% url 'login' %}">Login</a></li>
+       {% if user.is_superuser %}
+         <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+       {% else %}
+         <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+       {% endif %}
+     
     </ul>
   </nav>
 

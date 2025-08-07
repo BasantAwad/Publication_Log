@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateForm
 from django.contrib import messages
-from .models import Project, Publication
+from .models import Author, Project, Publication
 from .forms import PublicationForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -10,6 +10,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from projects.models import MatchRequest
 from django.views.decorators.http import require_POST
 from .email import notify_invalid_publication_url
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login as auth_login
 
 
 def project_list(request):
@@ -90,6 +92,8 @@ def publication_detail(request, pk):
 @login_required
 def user_dashboard(request):
     user = request.user
+    publications = Publication.objects.filter(Author=user)
+    collaborated_projects = Project.objects.filter(collaborators=user)
 
     if request.method == 'POST':
         form = UserUpdateForm(request.POST, instance=user)
@@ -102,8 +106,30 @@ def user_dashboard(request):
 
     return render(request, 'projects/dashboard.html', {
         'user': user,
-        'form': form
+        'form': form,
+        'publications': publications,
+        'collaborated_projects': collaborated_projects
     })
+
+@staff_member_required
+def admin_dashboard(request):
+    # Only fetch requests that haven't been reviewed (i.e., approved is None)
+    pending_requests = MatchRequest.objects.filter(approved__isnull=True).order_by("-id")
+    return render(request, "admin_dashboard.html", {"match_requests": pending_requests})
+
+def custom_login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            if user.is_superuser or user.is_staff:
+                return redirect('admin_dashboard')
+            else:
+                return redirect('user_dashboard')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
 
 def signup(request):
     if request.method == 'POST':
@@ -117,17 +143,16 @@ def signup(request):
     return render(request, 'registration/signup.html', {'form': form})
 
 
-@staff_member_required
-def admin_dashboard(request):
-    pending_requests = MatchRequest.objects.filter(reviewed=False).order_by("-created_at")
-    return render(request, "admin_dashboard.html", {"match_requests": pending_requests})
+
 
 @require_POST
 @staff_member_required
 def accept_match_request(request, pk):
     match = get_object_or_404(MatchRequest, pk=pk)
     decision = request.POST.get("decision")
-    match.reviewed = True
-    match.accepted = decision == "yes"
-    match.save()
+
+    if decision in ["yes", "no"]:
+        match.approved = (decision == "yes")
+        match.save()
+    
     return redirect("admin_dashboard")

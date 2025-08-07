@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{Neural Dust: Ultrasonic Backscatter for Wireless Power and Communication}
+    \author{Brian Gray et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in biomedical engineering using biomechanics and medical devices. Our approach demonstrates significant improvements in efficiency compared to existing methods. The results have important implications for tissue engineering and open new directions for future research in biomedical engineering.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of biomedical engineering faces growing challenges with medical devices scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include biomaterials and biomaterials, but lack biomaterials...
+    \end{document}
+    

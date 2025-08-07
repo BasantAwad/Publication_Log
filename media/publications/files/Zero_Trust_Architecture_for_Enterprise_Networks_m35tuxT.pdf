@@ -1,0 +1,30 @@
+
+    \documentclass{article}
+    \usepackage{graphicx}
+    \title{Zero Trust Architecture for Enterprise Networks}
+    \author{John King et al.}
+    \date{2024}
+    
+    \begin{document}
+    \maketitle
+    
+    \section{Abstract}
+    This study addresses critical challenges in cybersecurity combining penetration testing with threat intelligence. Our approach demonstrates significant improvements in efficiency compared to existing methods. The results have important implications for cryptography and open new directions for future research in cybersecurity.
+    
+    \section{Introduction}
+    This paper addresses network security in cybersecurity. Recent advances have enabled new approaches, but
+    limitations remain in network security.
+    
+    \section{Methods}
+    We developed a novel approach combining network security with network security,
+    implemented using Qiskit.
+    
+    \section{Results}
+    Our evaluation shows 77\% improvement in F1 score compared to
+    existing techniques (p<0.03).
+    
+    \section{Conclusion}
+    These findings demonstrate significant advances in cybersecurity, opening new
+    directions including cryptography applications.
+    \end{document}
+    

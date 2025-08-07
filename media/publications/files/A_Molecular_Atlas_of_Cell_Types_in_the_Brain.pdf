@@ -1,0 +1,30 @@
+
+    \documentclass{article}
+    \usepackage{graphicx}
+    \title{A Molecular Atlas of Cell Types in the Brain}
+    \author{Linda James et al.}
+    \date{2025}
+    
+    \begin{document}
+    \maketitle
+    
+    \section{Abstract}
+    This study addresses critical challenges in neuroscience using neural circuits and neural circuits. Our approach demonstrates significant improvements in scalability compared to existing methods. The results have important implications for cognitive science and open new directions for future research in neuroscience.
+    
+    \section{Introduction}
+    This paper addresses neuroimaging in neuroscience. Recent advances have enabled new approaches, but
+    limitations remain in neural circuits.
+    
+    \section{Methods}
+    We developed a novel approach combining neural circuits with brain-computer interface,
+    implemented using Qiskit.
+    
+    \section{Results}
+    Our evaluation shows 26\% improvement in F1 score compared to
+    existing techniques (p<0.04).
+    
+    \section{Conclusion}
+    These findings demonstrate significant advances in neuroscience, opening new
+    directions including cognitive science applications.
+    \end{document}
+    
