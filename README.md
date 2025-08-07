@@ -21,16 +21,38 @@ A comprehensive system for managing, tracking, and archiving research publicatio
 - Email contains a gentle reminder and a link for researchers to add their publications.
 - Ensures timely publication logging by sending automated follow-ups.
 
+**Implementation Details:**  
+- Implemented using Django scheduled tasks (management commands or Celery tasks).
+- Main code locations:
+  - `backend/models.py`: Defines Project, Researcher, and Publication models.
+  - `backend/management/commands/send_reminders.py`: Periodically checks for projects nearing completion and sends reminder emails.
+  - `backend/views.py` and `backend/templates/`: Handle the publication update forms and email content.
+  - Utilizes Django's built-in email utilities.
+
 ### 2. Archive
 - If a researcher uploads only the URL for a publication (without a PDF), the system tries to download the PDF from the given link.
 - If the PDF can't be found, the system notifies the researcher to upload the publication's PDF.
 - Uses the follow-up notification system to check whether the required PDF has been uploaded.
+
+**Implementation Details:**  
+- Archiving logic is handled in Django background jobs.
+- Main code locations:
+  - `backend/models.py`: Publication model with `url` and `pdf_file` fields.
+  - `backend/tasks.py` or `backend/management/commands/archive_publications.py`: Tries to fetch PDFs from given URLs.
+  - Uses the follow-up notification code if PDF retrieval fails.
 
 ### 3. Harvest
 - Periodically crawls selected domains (URIs) known to host research publications.
 - Matches found publications to BA-HPC project metadata (Author, Published Date, Title, Abstract, etc.).
 - Ensures that only publications after the project's acceptance date are considered.
 - Adds matched publications to the project log and notifies relevant researchers.
+
+**Implementation Details:**  
+- Harvesting uses Django scheduled tasks or management commands.
+- Main code locations:
+  - `backend/management/commands/harvest_publications.py` or `backend/tasks.py`: Contains web crawling and matching logic.
+  - Matching is implemented via Django ORM queries in `backend/models.py`.
+  - Notification emails use Django’s email utilities.
 
 ---
 
@@ -57,7 +79,7 @@ A comprehensive system for managing, tracking, and archiving research publicatio
 
 ## Technology Stack
 - **Frontend**: JavaScript, HTML, CSS
-- **Backend**: Python, JavaScript
+- **Backend**: Python, Django, JavaScript
 - **Database**: (Specify your database here, e.g., MySQL, PostgreSQL)
 - **Email Service**: (Specify service, e.g., SMTP, SendGrid)
 - **Web Crawling**: (Specify library, e.g., BeautifulSoup, Scrapy)
@@ -67,7 +89,7 @@ A comprehensive system for managing, tracking, and archiving research publicatio
 ## Project Structure
 
 - `/frontend` - User interface components (JavaScript, HTML, CSS)
-- `/backend` - Logic for notifications, archiving, and harvesting (Python, JavaScript)
+- `/backend` - Logic for notifications, archiving, and harvesting (Python, Django, JavaScript)
 - `/database` - Database models and migration scripts
 - `/docs` - Documentation
 
