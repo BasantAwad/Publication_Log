@@ -115,7 +115,7 @@ def admin_dashboard(request):
     pending_requests = MatchRequest.objects.filter(approved__isnull=True).order_by("-id")
     return render(request, "registration/admin_dashboard.html", {"match_requests": pending_requests})
 
-def login(request):
+def user_login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -134,10 +134,10 @@ def signup(request):
         form = UserCreation(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # Automatically log the user in after signup
-            send_welcome_email(user)  # Optional: Only if you defined this function
-            return redirect('project_page')  # Replace with your desired landing page
+            send_welcome_email(user)
+            return redirect('projects_list')  
     else:
+        print(form.errors)
         form = UserCreation()
 
     return render(request, 'registration/signup.html', {'form': form})

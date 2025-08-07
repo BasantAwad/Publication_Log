@@ -9,6 +9,7 @@ from .TokenModels import UploadToken
 from .models import Author
 from .utils import is_valid_download_link
 from .models import Publication
+import os
 
 
 # Email config
@@ -56,8 +57,6 @@ def send_email(subject, html_body):
             print(f"✅ Email sent to {RECEIVER}")
     except Exception as e:
         print(f"❌ Failed to send to {RECEIVER}: {e}")
-    else:
-        print(f"⏳ Not yet time to send to {RECEIVER}. Reminder scheduled for {reminder_date.date()}.")
 
 # ========================
 # LOGIC 1: 90% Reminder
@@ -71,14 +70,19 @@ def send_90_percent_reminders(projects):
         reminder_date = start_date + relativedelta(months=duration * 0.9)
 
         if datetime.now() >= reminder_date:
-            with open('emails/reminder.html', 'r', encoding='utf-8') as f:
-                reminder = f.read()
+             try:
+                template_path = os.path.join(settings.BASE_DIR, 'projects', 'templates', 'emails', 'reminder.html')
+                with open(template_path, 'r', encoding='utf-8') as f:
+                    reminder = f.read()
+             except FileNotFoundError as e:
+                print(f"❌ Reminder email template not found: {e}")
+                continue
 
-            html_body = personalize_template(reminder, project_title, end_date)
-            send_email(
+             html_body = personalize_template(reminder, project_title, end_date)
+             send_email(
                 subject=f"⏰ Reminder: Upload Publication for '{project_title}'",
                 html_body=html_body
-            )
+               )
 
 # ========================
 # LOGIC 2: Final Reminder
@@ -91,8 +95,13 @@ def send_final_reminders(projects):
         end_date = start_date + relativedelta(months=duration)
 
         if datetime.now() >= end_date:
-            with open('emails/upload_reminder.html', 'r', encoding='utf-8') as f:
-                reminder = f.read()
+            try:
+                template_path = os.path.join(settings.BASE_DIR, 'projects', 'templates', 'emails', 'upload_reminder.html')
+                with open(template_path, 'r', encoding='utf-8') as f:
+                    reminder = f.read()
+            except FileNotFoundError as e:
+                print(f"❌ Upload reminder template not found: {e}")
+                continue
 
             html_body = personalize_template(reminder, project_title, end_date)
             send_email(
@@ -129,10 +138,17 @@ def send_welcome_email(user):
         print(f"⚠️ Failed to generate upload link for welcome email: {e}")
         return
 
-    with open('emails/welcome_email.html', 'r', encoding='utf-8') as f:
-        template = f.read()
+ # Absolute path to the template file
+    template_path = os.path.join(settings.BASE_DIR, 'projects', 'templates', 'emails', 'welcome_email.html')
 
-    html_body = template.replace("{{ researcher_name }}", user.name.split()[0])
+    try:
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template = f.read()
+    except FileNotFoundError as e:
+        print(f"❌ Template file not found: {e}")
+        return
+
+    html_body = template.replace("{{ researcher_name }}", user.username.split()[0])
     html_body = html_body.replace("{{ upload_link }}", upload_link)
 
     send_email(

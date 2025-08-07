@@ -6,16 +6,16 @@ from . import views
 urlpatterns = [
     # Auth & dashboards
     path('signup/', views.signup, name='signup'),
-    path('login/', views.login, name='Login'),
+    path('login/', views.user_login, name='Login'),
     path('logout/', LogoutView.as_view(next_page='Login'), name='logout'),
-    path('dashboard/', views.user_dashboard, name='User Dashboard'),
-    path('admin-dashboard/', views.admin_dashboard, name='Admin Dashboard'),
+    path('user_dashboard/', views.user_dashboard, name='User Dashboard'),
+    path('admin_dashboard/', views.admin_dashboard, name='Admin Dashboard'),
 
     # Project & publication views
     path('', views.projects_list, name='Projects'),
     path('project/<int:pk>/', views.project_detail, name='project_detail'),
     path('publications/', views.publication_list, name='publication_list'),
-    path('publications/add/', views.add_publication, name='add_publication'),
+    path('publications/add/<int:project_id>/', views.add_publication, name='add_publication'),
     path('publications/<int:pk>/', views.publication_detail, name='publication_detail'),
     path('publications/upload/', views.add_publication, name='upload_publication'),
 
