@@ -1,18 +1,27 @@
+# Research Publication Log System
+
 # Publication Log
 
 A comprehensive system for managing, tracking, and archiving research publications related to projects executed on the BA-HPC. The Publication Log streamlines follow-ups, automates archiving, and harvests new publications, providing a centralized solution for researchers and administrators alike.
 
 ---
 
-## Table of Contents
-- [Features](#features)
-- [Components](#components)
-- [How It Works](#how-it-works)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Contributing](#contributing)
-- [License](#license)
+## Overview / Description
+
+Research Publication Log System is a web-based platform for managing, tracking, and archiving research publications related to projects executed on the BA-HPC. The system streamlines follow-ups, automates archiving, and harvests new publications, providing a centralized solution for researchers and administrators.
+
+**Target Users:**  
+- Researchers working on BA-HPC projects  
+- Project administrators and institution managers
+
+**Tech Stack Used:**  
+- Backend: Django (Python)  
+- Frontend: JavaScript, HTML, CSS  
+- Database: (Specify your database here, e.g., PostgreSQL or SQLite)  
+- Email Service: (Specify, e.g., SMTP, SendGrid)  
+- Web Crawling: (Specify, e.g., BeautifulSoup, Scrapy)
+
+---
 
 ## Features
 
@@ -54,7 +63,99 @@ A comprehensive system for managing, tracking, and archiving research publicatio
   - Matching is implemented via Django ORM queries in `backend/models.py`.
   - Notification emails use Django’s email utilities.
 
+- User authentication (researchers and admins)
+- Publication upload system (URL and PDF support)
+- Automated email reminders and notifications
+- Admin dashboard for managing users and projects
+- Automated archiving of uploaded publications
+- Harvesting publications from selected sources
+- Roles & permissions (admin vs normal user)
+
 ---
+
+## Installation Instructions
+
+1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/BasantAwad/Publication_Log.git
+    ```
+2. **Install dependencies:**
+    - Frontend: See `/frontend/README.md`
+    - Backend: See `/backend/README.md`
+3. **Set up the database:**
+    - Configure your database settings in `/backend/config`
+    - Run migration scripts if necessary
+4. **Configure email and harvesting settings:**
+    - Add your SMTP or email service credentials
+    - List publication source domains in the config
+5. **Run the application:**
+    - Start backend and frontend servers
+
+**Optional: Docker Setup**  
+*(Provide Dockerfile/docker-compose instructions here if available)*
+
+---
+
+## Environment Variables / Config
+
+You must set the following environment variables (usually in a `.env` file in `/backend`):
+
+- `SECRET_KEY` – Django secret key
+- `DATABASE_URL` – e.g., `postgres://USER:PASSWORD@HOST:PORT/DBNAME` or SQLite path
+- `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` – email server credentials
+- Any additional variables for 3rd party integrations or crawling
+
+---
+
+## Database Schema / Migrations
+
+- The system uses Django ORM models for Projects, Researchers, Publications, etc.
+- To apply migrations:
+    ```bash
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
+- The default database is (specify: SQLite/PostgreSQL).  
+  *(Edit above to match your actual database)*
+
+---
+
+## Usage Instructions
+
+- **Register:** Sign up as a researcher or admin (admins may register others).
+- **Login:** Authenticate using your credentials.
+- **Upload Publication:** Use the dashboard to add a publication (URL and/or PDF).
+- **Receive Reminders:** Get follow-up emails for pending publication uploads.
+- **Admin Dashboard:** Admins can view all projects, manage users, and oversee submissions.
+- **Harvested Publications:** Automatic matching and notifications when relevant publications are found.
+
+*Screenshots or GIFs can be added here to illustrate the flow.*
+
+---
+
+## Roles & Permissions
+
+- **Admin:**
+    - Manage all projects and user accounts
+    - View and edit any publication
+    - Receive all system notifications
+
+- **Normal User (Researcher):**
+    - Manage their own publications
+    - Receive reminders for their projects
+    - Cannot access other users’ data
+
+---
+
+## Table of Contents
+- [Features](#features)
+- [Components](#components)
+- [How It Works](#how-it-works)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Components
 
