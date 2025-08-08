@@ -21,7 +21,6 @@ h1 {
   background: linear-gradient(90deg, #003366, #0059b3);
   color: white;
   padding: 15px 40px;
-  display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -68,7 +67,6 @@ h1 {
 
 /* Layout */
 .container {
-  display: flex;
   max-width: 1200px;
   margin: 40px auto;
   gap: 30px;
@@ -193,14 +191,6 @@ html, body {
   font-size: 12px;
   margin-top: 5px;
   color: #ccc;
-}
-body {
-  background: #f3f4f6;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
 }
 
 .form-card {
