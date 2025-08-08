@@ -12,6 +12,8 @@ from .email import notify_invalid_publication_url
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
 from .email import send_welcome_email
+from django.contrib.auth import logout
+
 
 def projects_list(request):
     projects = Project.objects.all()
@@ -46,7 +48,7 @@ def projects_list(request):
 
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
-    publications = project.publications.prefetch_related('collaborators')
+    publications = project.publications.all().prefetch_related('collaborators')
     return render(request, 'projects/project_detail.html', {
         'project': project,
         'publications': publications
@@ -127,6 +129,11 @@ def user_login(request):
         form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form': form})
 
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('user_login')  # or 'home' if you have a homepage
+
 def signup(request):
     if request.method == 'POST':
         form = UserCreation(request.POST)
@@ -138,7 +145,6 @@ def signup(request):
         form = UserCreation()
 
     return render(request, 'registration/signup.html', {'form': form})
-
 
 
 @require_POST
