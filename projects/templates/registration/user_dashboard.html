@@ -2,71 +2,151 @@
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
-  <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">👤 User Profile</h1>
+<style>
+  .section {
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+  }
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    border-bottom: 3px solid #e5e7eb;
+    padding-bottom: 5px;
+  }
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+  }
+  .profile-header img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+  }
+  .info-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  .info-list li:last-child {
+    border-bottom: none;
+  }
+  .account-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
 
+.account-actions .btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-logout {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-reset {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+  .btn-blue { background: #2563eb; color: white; }
+  .btn-blue:hover { background: #1d4ed8; }
+  .btn-red { background: #dc2626; color: white; }
+  .btn-red:hover { background: #b91c1c; }
+  .btn-yellow { background: #f59e0b; color: white; }
+  .btn-yellow:hover { background: #d97706; }
+</style>
+
+<!-- Profile header -->
+<div class="profile-header">
+  <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" alt="User Avatar">
+  <div>
+    <h1 class="text-2xl font-bold">👤 {{ user.username }}</h1>
+    <p class="text-sm opacity-90">Member since {{ user.date_joined|date:"F Y" }}</p>
+  </div>
+</div>
+
+<!-- Edit profile form -->
+<div class="section bg-white">
+  <h2 class="section-title text-blue-800">✏️ Edit Profile</h2>
   <form method="post" class="space-y-4">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
+    <button type="submit" class="btn btn-blue">Save Changes</button>
   </form>
+</div>
 
-  <hr class="my-6 border-gray-300">
-
-  <ul class="space-y-2 text-gray-800 text-sm">
+<!-- User info -->
+<div class="section bg-gray-50">
+  <h2 class="section-title text-gray-800">ℹ️ Account Information</h2>
+  <ul class="info-list text-gray-700">
     <li><strong>🆔 ID:</strong> {{ user.id }}</li>
     <li><strong>📧 Email:</strong> {{ user.email }}</li>
     <li><strong>📅 Joined:</strong> {{ user.date_joined|date:"F d, Y - H:i" }}</li>
   </ul>
-
-  <div class="mt-10 flex justify-between">
-    <a href="{% url 'logout' %}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Logout</a>
-    <a href="{% url 'reset_password' %}" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Reset Password</a>
+  <div class="mt-4 flex gap-3">
+    <a href="{% url 'Login' %}" class="btn btn-red btn-logout">Logout</a>
+    <a href="{% url 'reset_password' %}" class="btn btn-yellow btn-reset">Reset Password</a>
   </div>
-
-  {% if messages %}
-    <div class="mt-4 text-green-600">
-      {% for message in messages %}
-        <p>{{ message }}</p>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  {% if collaborator_projects %}
-    <div class="mt-10">
-      <h2 class="text-2xl font-semibold mb-4 text-purple-700">🧑‍🤝‍🧑 Collaborator in Projects</h2>
-      <ul class="space-y-3">
-        {% for project in collaborator_projects %}
-          <li class="bg-gray-100 p-4 rounded shadow">
-            <h3 class="font-semibold text-lg text-blue-800">{{ project.title }}</h3>
-            <p class="text-sm text-gray-600">Start Date: {{ project.start_date }}</p>
-            <p class="text-sm text-gray-600">Duration: {{ project.duration }} months</p>
-            <p class="text-sm text-gray-600">Owner: {{ project.owner.username }}</p>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% else %}
-    <p class="mt-8 text-gray-500">You are not a collaborator in any projects yet.</p>
-  {% endif %}
-
-  {% if user_publications %}
-    <div class="mt-10">
-      <h2 class="text-2xl font-semibold mb-4 text-green-700">📚 Your Publications</h2>
-      <ul class="space-y-3">
-        {% for publication in user_publications %}
-          <li class="bg-gray-50 p-4 rounded shadow">
-            <h3 class="font-semibold text-lg text-blue-700">{{ publication.title }}</h3>
-            <p class="text-sm text-gray-600">Project: {{ publication.project.title }}</p>
-            <p class="text-sm text-gray-600">Type: {{ publication.publication_type }}</p>
-            <p class="text-sm text-gray-600">Year: {{ publication.publication_year }}</p>
-            <p class="text-sm text-gray-600">Uploaded: {{ publication.upload_date|date:"F d, Y" }}</p>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% else %}
-    <p class="mt-8 text-gray-500">You have not uploaded any publications yet.</p>
-  {% endif %}
 </div>
+
+<!-- Collaborator Projects -->
+{% if collaborator_projects %}
+<div class="section bg-white">
+  <h2 class="section-title text-purple-700">🧑‍🤝‍🧑 Collaborator Projects</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    {% for project in collaborator_projects %}
+      <div class="bg-gray-100 p-4 rounded shadow hover:shadow-md transition">
+        <h3 class="font-semibold text-lg text-blue-800">{{ project.title }}</h3>
+        <p class="text-sm text-gray-600">📅 Start Date: {{ project.start_date }}</p>
+        <p class="text-sm text-gray-600">⏳ Duration: {{ project.duration }} months</p>
+        <p class="text-sm text-gray-600">👤 Owner: {{ project.owner.username }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<p class="mt-8 text-gray-500">You are not a collaborator in any projects yet.</p>
+{% endif %}
+
+<!-- Publications -->
+{% if user_publications %}
+<div class="section bg-gray-50">
+  <h2 class="section-title text-green-700">📚 Your Publications</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    {% for publication in user_publications %}
+      <div class="bg-gray-50 p-4 rounded shadow hover:shadow-md transition">
+        <h3 class="font-semibold text-lg text-blue-700">{{ publication.title }}</h3>
+        <p class="text-sm text-gray-600">📁 Project: {{ publication.project.title }}</p>
+        <p class="text-sm text-gray-600">📑 Type: {{ publication.publication_type }}</p>
+        <p class="text-sm text-gray-600">📆 Year: {{ publication.publication_year }}</p>
+        <p class="text-sm text-gray-600">📤 Uploaded: {{ publication.upload_date|date:"F d, Y" }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<p class="mt-8 text-gray-500">You have not uploaded any publications yet.</p>
+{% endif %}
 {% endblock %}

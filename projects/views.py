@@ -53,8 +53,8 @@ def project_detail(request, pk):
     })
 
 @login_required
-def add_publication(request, token):
-    project = get_object_or_404(Project, id=token)
+def add_publication(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
 
     if request.method == 'POST':
         form = PublicationForm(request.POST, request.FILES, project=project)
@@ -73,7 +73,6 @@ def add_publication(request, token):
         form = PublicationForm(project=project)
 
     return render(request, 'publications/add_publication.html', {'form': form, 'project': project})
-
 
 def publication_list(request):
     publications = Publication.objects.all()
@@ -101,7 +100,7 @@ def user_dashboard(request):
     else:
         form = UserUpdateForm(instance=user)
 
-    return render(request, 'projects/dashboard.html', {
+    return render(request, 'registration/user_dashboard.html', {
         'user': user,
         'form': form,
         'publications': publications,

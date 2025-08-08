@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{Learning Dexterous In-Hand Manipulation}
+    \author{Paul Mendez et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in robotics using robot learning and swarm robotics. Our approach demonstrates significant improvements in scalability compared to existing methods. The results have important implications for robot learning and open new directions for future research in robotics.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of robotics faces growing challenges with robot learning scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include autonomous systems and human-robot interaction, but lack human-robot interaction...
+    \end{document}
+    

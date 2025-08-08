@@ -68,7 +68,7 @@ class Publication(models.Model):
 
 
     def clean(self):
-        if not self.pdf_file and not self.download_link:
+        if not self.file and not self.url:
             raise ValidationError("Either upload a file or provide a download link.")
 
     def __str__(self):

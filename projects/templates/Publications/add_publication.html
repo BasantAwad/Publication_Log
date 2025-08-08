@@ -1,149 +1,186 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block content %}
 <style>
-    body {
-        background: #f3f4f6;
-    }
-
     .form-wrapper {
-        max-width: 800px;
-        margin: 30px auto;
+        max-width: 850px;
+        margin: 50px auto;
         background: #fff;
-        padding: 24px 30px;
-        border-radius: 12px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-    }
-
-    .form-title {
-        font-size: 22px;
-        font-weight: 700;
+        padding: 34px 38px;
+        border-radius: 18px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        animation: floatUp 0.8s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      /* Decorative background circles */
+      .form-wrapper::before,
+      .form-wrapper::after {
+        content: "";
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: rgba(59, 130, 246, 0.1);
+        z-index: 0;
+      }
+      .form-wrapper::before {
+        top: -40px;
+        left: -40px;
+      }
+      .form-wrapper::after {
+        bottom: -40px;
+        right: -40px;
+      }
+      
+      .form-title {
+        font-size: 26px;
+        font-weight: 800;
         color: #1e3a8a;
-        margin-bottom: 18px;
-        border-left: 4px solid #3b82f6;
-        padding-left: 12px;
-    }
-
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        color: #374151;
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 14px;
-        background-color: #fff;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        border-color: #3b82f6;
-        outline: none;
-    }
-
-    .form-group small {
+        margin-bottom: 28px;
+        border-left: 6px solid #3b82f6;
+        padding-left: 14px;
+        position: relative;
+        z-index: 1;
+      }
+      
+      /* Floating label style */
+      .form-group {
+        position: relative;
+        margin-bottom: 22px;
+        z-index: 1;
+      }
+      
+      .form-group label {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        background: #fff;
+        padding: 0 6px;
         color: #6b7280;
-        font-size: 11.5px;
-    }
-
-    .form-group .error {
-        color: #dc2626;
-        font-size: 12px;
-        margin-top: 3px;
-    }
-
-    .radio-group {
-        margin-top: 8px;
-    }
-
-    .radio-option {
-        display: flex;
-        align-items: center;
-        margin-bottom: 6px;
-    }
-
-    .radio-option input[type="checkbox"] {
-        margin-right: 10px;
-        accent-color: #2563eb;
-        width: 16px;
-        height: 16px;
-    }
-
-    .btn-submit {
-        background-color: #2563eb;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
+        transition: 0.3s;
         font-size: 14px;
-        transition: background 0.3s ease, transform 0.2s ease;
-        cursor: pointer;
-    }
-
-    .btn-submit:hover {
-        background-color: #1e3a8a;
-        transform: scale(1.01);
-    }
-
-    .back-link {
-        display: inline-block;
-        margin-top: 16px;
-        font-size: 13px;
+        pointer-events: none;
+      }
+      
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 14px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 15px;
+        background-color: #fff;
+        transition: all 0.3s ease;
+      }
+      
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        outline: none;
+      }
+      
+      /* Floating label animation on focus or filled */
+      .form-group input:focus + label,
+      .form-group select:focus + label,
+      .form-group textarea:focus + label,
+      .form-group input:not(:placeholder-shown) + label,
+      .form-group textarea:not(:placeholder-shown) + label {
+        top: -8px;
+        left: 8px;
+        font-size: 12px;
         color: #2563eb;
-        text-decoration: none;
-    }
-
-    .back-link:hover {
-        text-decoration: underline;
-    }
-    .checkbox-group {
+      }
+      
+      /* Checkbox chip style */
+      .checkbox-group {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
         margin-top: 10px;
-    }
-
-    .checkbox-option {
-    background-color: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 6px 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: #374151;
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-}
-
-
-    .checkbox-option input[type="checkbox"] {
+      }
+      
+      .checkbox-option {
+        background-color: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 20px;
+        padding: 8px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #374151;
+        transition: all 0.25s ease;
+        cursor: pointer;
+      }
+      .checkbox-option input[type="checkbox"] {
         width: 16px;
         height: 16px;
         accent-color: #2563eb;
-    }
-
-    .checkbox-option:hover {
+      }
+      .checkbox-option:hover {
         background-color: #e0f2fe;
-    }
-</style>
-
+        transform: translateY(-2px);
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+      }
+      
+      /* Submit Button */
+      .btn-submit {
+        background: linear-gradient(90deg, #2563eb, #1d4ed8);
+        color: white;
+        padding: 12px 26px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        z-index: 1;
+        position: relative;
+      }
+      
+      .btn-submit:hover {
+        background: linear-gradient(90deg, #1e40af, #1d4ed8);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+      }
+      
+      /* Back Link */
+      .back-link {
+        display: inline-block;
+        margin-top: 18px;
+        font-size: 14px;
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+      .back-link:hover {
+        text-decoration: underline;
+        color: #1e3a8a;
+      }
+      
+      /* Animations */
+      @keyframes floatUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      /* Animations */
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
 <div class="form-wrapper">
     <div class="form-title">
         ➕ Add Publication to <span style="color:#2563eb;">{{ project.title }}</span>
@@ -161,8 +198,8 @@
                         <label class="checkbox-option">
                             {{ subwidget.tag }} {{ subwidget.choice_label }}
                         </label>
-                    {% endfor %}
-                </div>
+                        {% endfor %}
+                    </div>
                     {% if field.help_text %}
                         <small>{{ field.help_text }}</small>
                     {% endif %}
@@ -172,8 +209,8 @@
                 </div>
             {% else %}
                 <div class="form-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {% if field.help_text %}
                         <small>{{ field.help_text }}</small>
                     {% endif %}

@@ -27,14 +27,13 @@ except Author.DoesNotExist:
 context = ssl.create_default_context()
 
 def generate_upload_link(RECEIVER):
-    
     try:
         user = Author.objects.get(email=RECEIVER)
         token = UploadToken.objects.create(user=user)
         upload_url = f"{settings.SITE_URL}/upload/{token.token}/"
         return upload_url
     except Author.DoesNotExist:
-        return None  # Or raise an error/log if user not found
+        return "No upload link available"  # Return a default string
 
 def personalize_template(template, title, end_date):
     html_body = template.replace("{{ researcher_name }}", RECEIVER_NAME)
@@ -48,7 +47,7 @@ def personalize_welcome_template(template):
     upload_link = generate_upload_link(RECEIVER)
     
     html_body = template.replace("{{ researcher_name }}", receiver_name)
-    html_body = html_body.replace("{{ upload_link }}", upload_link)
+    html_body = html_body.replace("{{ upload_link }}", upload_link if upload_link else "No link available")  # Handle None case
     return html_body
 
 def send_email(subject, html_body):

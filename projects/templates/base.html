@@ -19,7 +19,7 @@
        {% if user.is_superuser %}
          <li><a href="{% url 'Admin Dashboard' %}">Dashboard</a></li>
        {% else %}
-         <li><a href="{% url 'User Dashboard' %}">Dashboard</a></li>
+         <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
        {% endif %}
      
     </ul>

@@ -1,13 +1,10 @@
 import os
 from urllib.parse import urlparse
-
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 import requests
-
 from .models import Author, Publication
-
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -17,17 +14,21 @@ class PublicationForm(forms.ModelForm):
         label="Authors",
         help_text="Enter comma-separated author names."
     )
+    
+    def __init__(self, *args, project=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.project = project  # Store the project for later use if needed
 
     class Meta:
         model = Publication
-        fields = ['title', 'abstract', 'file', 'url'] 
-            
+        fields = ['title', 'abstract', 'file', 'url' , 'year']  # Ensure these fields exist in your model
+
     def clean(self):
         cleaned_data = super().clean()
-        pdf_file = cleaned_data.get('pdf_file')
-        download_link = cleaned_data.get('download_link')
+        file = cleaned_data.get('file')  # Match the field name in your model
+        url = cleaned_data.get('url')     # Match the field name in your model
 
-        if not pdf_file and not download_link:
+        if not file and not url:
             raise forms.ValidationError("Please upload a file or provide a download link.")
         return cleaned_data
 
@@ -47,9 +48,10 @@ class PublicationForm(forms.ModelForm):
                 author, _ = Author.objects.get_or_create(name=name)
                 authors.append(author)
 
-            instance.collaborators.set(authors)
+            instance.collaborators.set(authors)  # Ensure 'collaborators' is a ManyToManyField
 
         return instance
+
 
 
 

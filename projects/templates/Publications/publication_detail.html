@@ -3,78 +3,135 @@
 
 <style>
     body {
-        background-color: #f3f4f6;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        color: #1f2937;
     }
-
+    
+    /* Main container */
     .publication-container {
-        max-width: 720px;
+        max-width: 760px;
         margin: 40px auto;
         background: white;
-        padding: 32px;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+        padding: 36px;
+        border-radius: 18px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-
+    
+    .publication-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Title */
     .publication-title {
-        font-size: 28px;
+        font-size: 30px;
         font-weight: bold;
-        color: #1f2937;
-        border-bottom: 2px solid #e5e7eb;
-        padding-bottom: 12px;
-        margin-bottom: 24px;
+        color: #111827;
+        border-bottom: 3px solid #3b82f6;
+        padding-bottom: 14px;
+        margin-bottom: 28px;
+        position: relative;
     }
-
+    
+    .publication-title::after {
+        content: "📚";
+        position: absolute;
+        right: 0;
+        font-size: 22px;
+    }
+    
+    /* Image */
     .publication-image {
         width: 100%;
-        max-height: 350px;
+        max-height: 380px;
         object-fit: cover;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        margin-bottom: 24px;
+        border-radius: 14px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+        margin-bottom: 26px;
+        transition: transform 0.3s ease;
     }
-
+    
+    .publication-image:hover {
+        transform: scale(1.02);
+    }
+    
+    /* File info section */
     .publication-file {
-        margin-bottom: 20px;
+        margin-bottom: 24px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
-
+    
+    /* Download button */
     .download-btn {
-        background-color: #2563eb;
+        background: linear-gradient(90deg, #2563eb, #1d4ed8);
         color: white;
-        padding: 10px 20px;
+        padding: 11px 24px;
         font-weight: 600;
         font-size: 15px;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         text-decoration: none;
         display: inline-block;
-        transition: background 0.3s ease, transform 0.2s ease;
+        transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
     }
-
+    
     .download-btn:hover {
-        background-color: #1d4ed8;
-        transform: scale(1.02);
+        background: linear-gradient(90deg, #1d4ed8, #1e40af);
+        transform: scale(1.04);
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
     }
-
+    
+    /* Publication details */
     .publication-info p {
         font-size: 17px;
         color: #374151;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        line-height: 1.6;
     }
-
+    
     .publication-info span {
-        font-weight: 600;
+        font-weight: 700;
         color: #111827;
     }
-
+    
     .publication-info a {
         color: #2563eb;
         text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
     }
-
+    
     .publication-info a:hover {
+        color: #1d4ed8;
         text-decoration: underline;
     }
+    
+    /* Extra subtle fade-in effect for content */
+    .publication-container {
+        animation: fadeIn 0.6s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
 </style>
 
 <div class="publication-container">
