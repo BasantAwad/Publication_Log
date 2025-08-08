@@ -5,10 +5,11 @@ from . import views
 urlpatterns = [
     # Auth & dashboards
     path('signup/', views.signup, name='signup'),
-    path('login/', views.user_login, name='Login'),
+    path('login/', views.login, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('user_dashboard/', views.user_dashboard, name='user_dashboard'),
-    path('admin_dashboard/', views.admin_dashboard, name='Admin Dashboard'),
+    path('administrator_dashboard/', views.administrator_dashboard, name='administrator_dashboard'),
+    path("accept_match_request/<int:pk>/", views.accept_match_request, name="accept_match_request"),
 
     # Project & publication views
     path('', views.projects_list, name='projects_page'),

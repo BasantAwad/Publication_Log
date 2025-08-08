@@ -109,20 +109,19 @@ def user_dashboard(request):
         'collaborated_projects': collaborated_projects
     })
 
-@staff_member_required
-def admin_dashboard(request):
+def administrator_dashboard(request):
     # Only fetch requests that haven't been reviewed (i.e., approved is None)
     pending_requests = MatchRequest.objects.filter(approved__isnull=True).order_by("-id")
-    return render(request, "registration/admin_dashboard.html", {"match_requests": pending_requests})
+    return render(request, "registration/administrator_dashboard.html", {"match_requests": pending_requests})
 
-def user_login(request):
+def login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
             if user.is_superuser or user.is_staff:
-                return redirect('admin_dashboard')
+                return redirect('administrator_dashboard')
             else:
                 return redirect('user_dashboard')
     else:
@@ -132,7 +131,7 @@ def user_login(request):
 @login_required
 def logout_view(request):
     logout(request)
-    return redirect('user_login')  # or 'home' if you have a homepage
+    return redirect('login')
 
 def signup(request):
     if request.method == 'POST':
@@ -148,7 +147,6 @@ def signup(request):
 
 
 @require_POST
-@staff_member_required
 def accept_match_request(request, pk):
     match = get_object_or_404(MatchRequest, pk=pk)
     decision = request.POST.get("decision")
@@ -157,4 +155,4 @@ def accept_match_request(request, pk):
         match.approved = (decision == "yes")
         match.save()
     
-    return redirect("admin_dashboard")
+    return redirect("administrator_dashboard")
