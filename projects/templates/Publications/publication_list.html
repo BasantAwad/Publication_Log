@@ -1,19 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">Publications</h1>
-    <ul class="space-y-4">
-        {% for pub in publications %}
-        <li class="p-4 bg-white rounded shadow hover:shadow-md transition">
-            <a href="{% url 'publication_detail' pk=pub.pk %}" class="text-xl font-semibold text-blue-700 hover:underline">
-                {{ pub.title }}
-            </a>
-            <p class="text-sm text-gray-600">{{ pub.year }} - {{ pub.type }}</p>
-        </li>
-        {% empty %}
-        <li>No Publications untill now</li>
+<div class="container" style="display: flex; gap: 30px; max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" style="width: 260px;">
+    <form method="get" id="searchForm">
+      <input type="text" name="search" id="searchInput" class="search-input"
+             placeholder="Search projects..." value="{{ search_query }}"
+             oninput="document.getElementById('searchForm').submit();" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+
+      <h3>Filter</h3>
+
+      <label for="type">Type:</label>
+      <select name="type" id="type" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        <option value="">All</option>
+        {% for type in types %}
+          <option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>{{ type }}</option>
         {% endfor %}
+        
+      </select>
+
+      <label for="year">Year:</label>
+      <select name="year" id="year" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        <option value="">All</option>
+        {% for year in years %}
+          <option value="{{ year }}" {% if selected_year|stringformat:"s" == year|stringformat:"s" %}selected{% endif %}>
+            {{ year }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <hr style="margin: 20px 0;">
+
+      <h3>Sort</h3>
+      <select name="sort" onchange="this.form.submit()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest</option>
+        <option value="oldest" {% if selected_sort == "oldest" %}selected{% endif %}>Oldest</option>
+      </select>
+    </form>
+  </aside>
+  <!-- Publications List -->
+  <main style="flex-grow: 1;">
+    
+    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px;">
+      {% for pub in publications %}
+      <li style="background: white; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: box-shadow 0.3s;">
+        <a href="{% url 'publication_detail' pk=pub.pk %}" style="font-size: 1.25rem; font-weight: 600; color: #1d4ed8; text-decoration: none;">
+          {{ pub.title }}
+        </a>
+        <p style="color: #6b7280; font-size: 0.875rem;">{{ pub.year }} - {{ pub.type }}</p>
+      </li>
+      {% empty %}
+      <li>No Publications until now</li>
+      {% endfor %}
     </ul>
+  </main>
+
 </div>
 {% endblock %}
