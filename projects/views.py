@@ -12,6 +12,8 @@ from .email import notify_invalid_publication_url
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
 from .email import send_welcome_email
+from django.contrib.auth import logout
+
 
 def projects_list(request):
     projects = Project.objects.all()
@@ -46,7 +48,7 @@ def projects_list(request):
 
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
-    publications = project.publications.prefetch_related('collaborators')
+    publications = project.publications.all().prefetch_related('collaborators')
     return render(request, 'projects/project_detail.html', {
         'project': project,
         'publications': publications
@@ -107,25 +109,29 @@ def user_dashboard(request):
         'collaborated_projects': collaborated_projects
     })
 
-@staff_member_required
-def admin_dashboard(request):
+def administrator_dashboard(request):
     # Only fetch requests that haven't been reviewed (i.e., approved is None)
     pending_requests = MatchRequest.objects.filter(approved__isnull=True).order_by("-id")
-    return render(request, "registration/admin_dashboard.html", {"match_requests": pending_requests})
+    return render(request, "registration/administrator_dashboard.html", {"match_requests": pending_requests})
 
-def user_login(request):
+def login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
             if user.is_superuser or user.is_staff:
-                return redirect('admin_dashboard')
+                return redirect('administrator_dashboard')
             else:
                 return redirect('user_dashboard')
     else:
         form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form': form})
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 def signup(request):
     if request.method == 'POST':
@@ -140,9 +146,7 @@ def signup(request):
     return render(request, 'registration/signup.html', {'form': form})
 
 
-
 @require_POST
-@staff_member_required
 def accept_match_request(request, pk):
     match = get_object_or_404(MatchRequest, pk=pk)
     decision = request.POST.get("decision")
@@ -151,4 +155,4 @@ def accept_match_request(request, pk):
         match.approved = (decision == "yes")
         match.save()
     
-    return redirect("admin_dashboard")
+    return redirect("administrator_dashboard")
