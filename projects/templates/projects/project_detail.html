@@ -1,164 +1,109 @@
 {% extends "base.html" %}
+
 {% block content %}
-<style> .pub-section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: #1e3a8a;
-}
-
-.pub-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-}
-
-.pub-card {
-    background: white;
-    padding: 16px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.pub-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-}
-
-.pub-title {
-    color: #2563eb;
-    font-weight: 600;
-    font-size: 1.1rem;
-    text-decoration: none;
-}
-
-.pub-title:hover {
-    text-decoration: underline;
-}
-
-.pub-meta {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin-top: 6px;
-}
-
-/* Buttons */
-    .button-group {
-        margin-top: 30px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
+<style>
+    .pub-section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-top: 20px;
+        margin-bottom: 12px;
+        color: #1e3a8a;
     }
-
-    .btn {
-        padding: 10px 18px;
-        font-weight: 600;
+    .pub-card {
+        background: white;
+        padding: 10px 14px;
         border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        border: 1px solid #ddd;
+        font-size: 0.9rem;
+        min-width: 220px; /* حجم الكارت */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        flex-shrink: 0;
     }
-
+    .pub-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .pub-title {
+        color: #2563eb;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .pub-title:hover {
+        text-decoration: underline;
+    }
+    .pub-meta {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+    .btn {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+    }
     .btn-back {
-        background: #f3f4f6;
+        background-color: #e5e7eb;
         color: #374151;
     }
-
     .btn-back:hover {
-        background: #e5e7eb;
+        background-color: #d1d5db;
     }
-
     .btn-add {
-        background: #2563eb;
+        background-color: #2563eb;
         color: white;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
     }
-
     .btn-add:hover {
-        background: #1d4ed8;
-        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+        background-color: #1e40af;
     }
 </style>
-<div class="container mx-auto p-4">
 
+<div class="container mx-auto p-4">
     <!-- Project Header -->
     <h2 class="text-3xl font-bold mb-6 text-gray-800">{{ project.title }}</h2>
 
-    <!-- Project Info in horizontal layout -->
-    <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
-        <div class="grid md:grid-cols-3 gap-6 text-gray-700">
-            <div class="bg-gray-50 rounded-lg p-4 shadow-sm">
-                <p class="font-semibold text-gray-900">📅 Created</p>
-                <p>{{ project.created }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-4 shadow-sm">
-                <p class="font-semibold text-gray-900">👥 Team</p>
-                <p>{{ project.team }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-4 shadow-sm">
-                <p class="font-semibold text-gray-900">⏳ Duration</p>
-                <p>{{ project.duration }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-4 shadow-sm col-span-full">
-                <p class="font-semibold text-gray-900">📄 Summary</p>
-                <p>{{ project.summary }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-4 shadow-sm">
-                <p class="font-semibold text-gray-900">🌐 Domain</p>
-                <p>{{ project.domain }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-4 shadow-sm col-span-full">
-                <p class="font-semibold text-gray-900">🔬 Scientific Case</p>
-                <p>{{ project.scientific_case }}</p>
-            </div>
+    <!-- Project Info -->
+    <div class="grid md:grid-cols-3 gap-8 mb-8">
+        <div class="md:col-span-2 project-details-box">
+            <p>📅 Created : {{ project.created }}</p>
+            <p>👥 Team : {{ project.team }}</p>
+            <p>⏳ Duration : {{ project.duration }}</p>
+            <p>📄 Summary : {{ project.abstract }}</p>
+            <p>🌐 Domain : {{ project.domain }}</p>
+            <p>🔬 Scientific Case : {{ project.scientific_case }}</p>
+
+            <!-- Publications Section Inside Project Box -->
+            <p class="pub-section-title">📚 Publications ({{ publications|length }})</p>
+            {% if publications %}
+                <div class="flex gap-4 overflow-x-auto pb-2">
+                    {% for pub in publications %}
+                        <div class="pub-card">
+                            <a href="{% url 'publication_detail' pub.id %}" class="pub-title">
+                                {{ pub.title }}
+                            </a>
+                            <p class="pub-meta">{{ pub.year }} | {{ pub.type }}</p>
+                            {% if pub.authors.exists %}
+                                <p class="pub-meta">👥 {{ pub.authors.all|join:", " }}</p>
+                            {% else %}
+                                <p class="text-sm italic text-gray-400">No authors</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 italic">No publications added yet.</p>
+            {% endif %}
         </div>
+        <div></div>
     </div>
 
-    <!-- Publications Section -->
-    {% if publications %}
-    <div>
-        <p class="text-xl font-semibold text-gray-800 mb-4">
-            📚 Publications ({{ publications|length }})
-        </p>
-
-        <!-- Card Grid -->
-        <div class="pub-grid ">
-            {% for pub in publications %}
-            <div class="pub-card">
-                <a href="{% url 'publication_detail' pub.id %}" class="block text-blue-600 hover:underline font-medium text-lg mb-2">
-                    {{ pub.title }}
-                </a>
-                <p class="text-sm text-gray-600">
-                    {{ pub.year }} | {{ pub.type }}
-                </p>
-                {% if pub.authors.exists %}
-                    <p class="text-sm text-gray-700 mt-2">👥 {{ pub.authors.all|join:", " }}</p>
-                {% else %}
-                    <p class="text-sm text-gray-400 italic mt-2">No authors</p>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
+    <!-- Buttons with Styling -->
+    <div class="mt-6 flex gap-3">
+        <a href="{% url 'projects_page' %}" class="btn btn-back">🔙 Back to Projects</a>
+        <a href="{% url 'add_publication' project.id %}" class="btn btn-add">➕ Add Publication</a>
     </div>
-    {% else %}
-    <p class="mt-6 text-gray-500 italic">No publications added yet.</p>
-    {% endif %}
-
-    <!-- Action Buttons -->
-    <div class="button-group">
-        <a href="{% url 'projects_page' %}">
-            <button class="btn-back">
-                🔙 Back to Projects
-            </button>
-        </a>
-
-        <a href="{% url 'add_publication' project.id %}">
-            <button class=btn-add >
-                ➕ Add Publication
-            </button>
-        </a>
-</div>
 </div>
 {% endblock %}

@@ -4,17 +4,19 @@
 {% block content %}
 <style>
   body {
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    background: none;
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
+    /* خلي body عادي بدون flex */
   }
 
   .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 85vh;
+    height: 85vh; /* 85% من ارتفاع الشاشة، ممكن تضيف padding-top اذا الناف بار عالي */
+    width: 100%;
   }
 
   .auth-form {
@@ -27,6 +29,7 @@
     text-align: center;
   }
 
+  /* باقي التنسيقات كما هي */
   .auth-form h2 {
     color: #333;
     margin-bottom: 1.5rem;
