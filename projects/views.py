@@ -13,18 +13,23 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
 from .email import send_welcome_email
 from django.contrib.auth import logout
+from django.db.models.functions import ExtractYear
 
+
+
+from django.db.models.functions import ExtractYear
 
 def projects_list(request):
     projects = Project.objects.all()
 
-    search_query = request.GET.get('search', '').lower()
+    search_query = request.GET.get('search', '')
     domain = request.GET.get('domain', '')
     year = request.GET.get('year', '')
     sort = request.GET.get('sort', '')
 
     if search_query:
-        projects = projects.filter(title__icontains=search_query)
+        projects = projects.filter(title__istartswith=search_query)
+
     if domain:
         projects = projects.filter(domain=domain)
     if year:
@@ -34,12 +39,20 @@ def projects_list(request):
     elif sort == 'oldest':
         projects = projects.order_by('created')
 
+   
+    domains = Project.objects.values_list('domain', flat=True).distinct()
+
+    
+    years = Project.objects.annotate(year=ExtractYear('created')).values_list('year', flat=True).distinct().order_by('-year')
+
     context = {
         'projects': projects,
         'search_query': search_query,
         'selected_domain': domain,
         'selected_year': year,
         'selected_sort': sort,
+        'domains': domains,
+        'years': years,
     }
     
     return render(request, 'projects/projects_page.html', context)
@@ -76,16 +89,61 @@ def add_publication(request, project_id):
 
     return render(request, 'publications/add_publication.html', {'form': form, 'project': project})
 
-def publication_list(request):
-    publications = Publication.objects.all()
-    return render(request, 'publications/publication_list.html', {
-        'publications': publications
-    })
+from django.shortcuts import get_object_or_404, render
+from .models import Publication
+
 def publication_detail(request, pk):
     publication = get_object_or_404(Publication, pk=pk)
-    return render(request, 'publications/publication_detail.html', {
-        'publication': publication
-    })
+    return render(request, 'publications/publication_detail.html', {'publication': publication})
+
+def publication_list(request):
+    publications = Publication.objects.all()
+
+    search_query = request.GET.get('search', '').strip()
+    selected_domain = request.GET.get('domain', '')
+    selected_year = request.GET.get('year', '')
+    selected_type = request.GET.get('type', '')   # فلتر نوع النشر
+    selected_sort = request.GET.get('sort', 'newest')
+
+    if search_query:
+        publications = publications.filter(title__icontains=search_query)
+
+    if selected_domain:
+        publications = publications.filter(project__domain=selected_domain)
+
+    if selected_year:
+        try:
+            year_int = int(selected_year)
+            publications = publications.filter(year=year_int)
+        except ValueError:
+            pass  # لو قيمة السنة مش رقمية، تجاهل الفلترة
+
+    if selected_type:
+        publications = publications.filter(type=selected_type)
+
+    if selected_sort == 'newest':
+        publications = publications.order_by('-year', '-id')
+    else:
+        publications = publications.order_by('year', 'id')
+
+    domains = Project.objects.values_list('domain', flat=True).distinct()
+    years = Publication.objects.values_list('year', flat=True).distinct().order_by('-year')
+    types = [choice[0] for choice in Publication._meta.get_field('type').choices]  # جلب أنواع النشر
+
+    context = {
+        'publications': publications,
+        'search_query': search_query,
+        'selected_domain': selected_domain,
+        'selected_year': selected_year,
+        'selected_type': selected_type,
+        'selected_sort': selected_sort,
+        'domains': domains,
+        'years': years,
+        'types': types,
+    }
+
+    return render(request, 'publications/publication_list.html', context)
+
 
 @login_required
 def user_dashboard(request):

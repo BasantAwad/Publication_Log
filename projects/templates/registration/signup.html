@@ -12,7 +12,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 60px); /* ناقص ارتفاع الناف بار */
+    min-height: calc(100vh - 60px);
     padding: 20px;
   }
 
@@ -34,7 +34,7 @@
     text-align: center;
   }
 
-  /* نعدل شكل الحقول الافتراضية من Django */
+  
   .auth-form p {
     margin-bottom: 1.2rem;
   }
@@ -112,7 +112,7 @@
       {{ form.as_p }}
       <button type="submit">Sign Up</button>
     </form>
-    <p>Already have an account? <a href="{% url 'Login' %}">Login</a></p>
+    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
   </div>
 </div>
 {% endblock %}
