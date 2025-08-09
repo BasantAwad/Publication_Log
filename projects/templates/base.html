@@ -12,21 +12,22 @@
 <body>
 
   <!-- ✅ Navbar -->
-  <nav class="navbar">
-    <div class="logo">
-      <img src="{% static 'images/BA.jpeg' %}" alt="BA Logo">
-    </div>
-    <ul class="nav-links">
-       <li><a href="{% url 'projects_page' %}">Home</a></li>
-       <li><a href="{% url 'login' %}">Login</a></li>
-       {% if user.is_superuser %}
-         <li ><a class="glyphicon glyphicon-user" href="{% url 'administrator_dashboard' %}"></a></li>
-       {% else %}
-         <li><a class="glyphicon glyphicon-user" href="{% url 'user_dashboard' %}"></a></li>
-       {% endif %}
-     
-    </ul>
-  </nav>
+<nav class="navbar">
+  <div class="logo">
+    <img src="{% static 'images/BA.jpeg' %}" alt="BA Logo">
+  </div>
+  <ul class="nav-links">
+     <li><a href="{% url 'projects_page' %}">Home</a></li>
+     <li><a href="{% url 'login' %}">Login</a></li>
+     <li><a href="{% url 'publication_list' %}">Publications</a></li> <!-- أضفت هذا الرابط -->
+     {% if user.is_superuser %}
+       <li><a class="glyphicon glyphicon-user" href="{% url 'administrator_dashboard' %}"></a></li>
+     {% else %}
+       <li><a class="glyphicon glyphicon-user" href="{% url 'user_dashboard' %}"></a></li>
+     {% endif %}
+  </ul>
+</nav>
+
 
   <!-- ✅ Page Content -->
   <div class="container">

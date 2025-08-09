@@ -3,36 +3,91 @@
 
 {% block content %}
 
+<style>
+
+  .admin-info {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+
+
+  .admin-info h2 {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .admin-info p {
+    margin: 5px 0;
+  }
+
+
+  .btn-sm {
+    margin-top: 5px;
+  }
+
+
+  .match-request {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .match-request p {
+    margin: 6px 0;
+  }
+
+ 
+  .approved {
+    color: green;
+    font-weight: bold;
+  }
+  .rejected {
+    color: red;
+    font-weight: bold;
+  }
+  .pending {
+    color: orange;
+    font-weight: bold;
+  }
+</style>
+
 <!-- Admin Info Section -->
-<div style="padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px;">
-  <h2>Welcome, {{ request.user.username }} <span class="glyphicon glyphicon-user" aria-hidden="true"></span></h2>
-  <p><strong>Email:</strong> {{ request.user.email }} <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span></p>
-  <p><strong>Role:</strong> Administrator <span class="glyphicon glyphicon-cog" aria-hidden="true"></span></p>
+<div class="admin-info">
+  <h2>Welcome, {{ request.user.username }} <span class="glyphicon glyphicon-user"></span></h2>
+  <p><strong>Email:</strong> {{ request.user.email }} <span class="glyphicon glyphicon-envelope"></span></p>
+  <p><strong>Role:</strong> Administrator <span class="glyphicon glyphicon-cog"></span></p>
   <form action="{% url 'logout' %}" method="post">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger btn-sm">
-      <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> Logout
+      <span class="glyphicon glyphicon-log-out"></span> Logout
     </button>
   </form>
 </div>
 
 <!-- Match Requests Section -->
-<h2>Match Requests <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></h2>
+<h2>Match Requests <span class="glyphicon glyphicon-list-alt"></span></h2>
 
 {% for request in match_requests %}
-  <div style="border:1px solid #ccc; padding:15px; margin:15px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #fff;">
-    <p><strong>Project Title:</strong> {{ request.project.title }} <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span></p>
-    <p><strong>Publication Title:</strong> {{ request.publication.title }} <span class="glyphicon glyphicon-book" aria-hidden="true"></span></p>
-    <p><strong>Matched Title:</strong> {{ request.match_title }} <span class="glyphicon glyphicon-tags" aria-hidden="true"></span></p>
-    <p><strong>Similarity Score:</strong> {{ request.match_score|floatformat:2 }} <span class="glyphicon glyphicon-stats" aria-hidden="true"></span></p>
-    <p><strong>Shared Authors:</strong> {{ request.match_authors }} <span class="glyphicon glyphicon-user" aria-hidden="true"></span></p>
+  <div class="match-request">
+    <p><strong>Project Title:</strong> {{ request.project.title }} <span class="glyphicon glyphicon-folder-open"></span></p>
+    <p><strong>Publication Title:</strong> {{ request.publication.title }} <span class="glyphicon glyphicon-book"></span></p>
+    <p><strong>Matched Title:</strong> {{ request.match_title }} <span class="glyphicon glyphicon-tags"></span></p>
+    <p><strong>Similarity Score:</strong> {{ request.match_score|floatformat:2 }} <span class="glyphicon glyphicon-stats"></span></p>
+    <p><strong>Shared Authors:</strong> {{ request.match_authors }} <span class="glyphicon glyphicon-user"></span></p>
     <p><strong>Approval Status:</strong> 
       {% if request.approved == True %}
-        ✅ Approved <span class="glyphicon glyphicon-ok-circle" aria-hidden="true" style="color:green;"></span>
+        <span class="approved">✅ Approved <span class="glyphicon glyphicon-ok-circle"></span></span>
       {% elif request.approved == False %}
-        ❌ Rejected <span class="glyphicon glyphicon-remove-circle" aria-hidden="true" style="color:red;"></span>
+        <span class="rejected">❌ Rejected <span class="glyphicon glyphicon-remove-circle"></span></span>
       {% else %}
-        ⏳ Pending <span class="glyphicon glyphicon-time" aria-hidden="true" style="color:orange;"></span>
+        <span class="pending">⏳ Pending <span class="glyphicon glyphicon-time"></span></span>
       {% endif %}
     </p>
 
@@ -40,10 +95,10 @@
       <form method="post" action="{% url 'accept_match_request' request.id %}">
         {% csrf_token %}
         <button name="decision" value="yes" class="btn btn-success btn-sm">
-          <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Accept
+          <span class="glyphicon glyphicon-ok"></span> Accept
         </button>
         <button name="decision" value="no" class="btn btn-danger btn-sm">
-          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Reject
+          <span class="glyphicon glyphicon-remove"></span> Reject
         </button>
       </form>
     {% endif %}
@@ -51,4 +106,5 @@
 {% empty %}
   <p>No pending match requests.</p>
 {% endfor %}
+
 {% endblock %}
