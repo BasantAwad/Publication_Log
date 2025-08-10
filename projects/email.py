@@ -9,6 +9,8 @@ from .models import UploadToken
 from .utils import is_valid_download_link
 from .models import Publication
 from .models import Author
+from django.contrib.auth.models import User
+import requests
 import os
 
 
@@ -26,25 +28,26 @@ except Author.DoesNotExist:
 
 context = ssl.create_default_context()
 
-def generate_upload_link(RECEIVER):
+def generate_upload_link(request, receiver_email):
     try:
-        user = Author.objects.get(email=RECEIVER)
+        user = User.objects.get(email=receiver_email)  # make sure this is a User, not Author
         token = UploadToken.objects.create(user=user)
-        upload_url = f"{settings.SITE_URL}/upload/{token.token}/"
+        upload_url = request.build_absolute_uri(f"/upload/{token.token}/")
         return upload_url
-    except Author.DoesNotExist:
-        return "No upload link available"  # Return a default string
+    except User.DoesNotExist:
+        return "No upload link available"
 
-def personalize_template(template, title, end_date):
+
+def personalize_template(request ,template, title, end_date):
     html_body = template.replace("{{ researcher_name }}", RECEIVER_NAME)
     html_body = html_body.replace("{{ project_title }}", title)
     html_body = html_body.replace("{{ project_end_date }}", end_date.strftime("%Y-%m-%d"))
-    html_body = html_body.replace("{{ upload_link }}", generate_upload_link(RECEIVER))
+    html_body = html_body.replace("{{ upload_link }}", generate_upload_link(request, RECEIVER))
     return html_body
 
-def personalize_welcome_template(template):
+def personalize_welcome_template(request ,template):
     receiver_name = str(RECEIVER_NAME)  # Ensure it's a string
-    upload_link = generate_upload_link(RECEIVER)
+    upload_link = generate_upload_link(request ,RECEIVER)
     
     html_body = template.replace("{{ researcher_name }}", receiver_name)
     html_body = html_body.replace("{{ upload_link }}", upload_link if upload_link else "No link available")  # Handle None case
@@ -69,7 +72,7 @@ def send_email(subject, html_body):
 # ========================
 # LOGIC 1: 90% Reminder
 # ========================
-def send_90_percent_reminders(projects):
+def send_90_percent_reminders(request ,projects):
     for project in projects:
         global RECEIVER, reminder_date  # Needed for outer variables used in `else` print
         RECEIVER, project_title, start_str, duration = project
@@ -86,7 +89,7 @@ def send_90_percent_reminders(projects):
                 print(f"❌ Reminder email template not found: {e}")
                 continue
 
-             html_body = personalize_template(reminder, project_title, end_date)
+             html_body = personalize_template(request ,reminder, project_title, end_date)
              send_email(
                 subject=f"⏰ Reminder: Upload Publication for '{project_title}'",
                 html_body=html_body
@@ -95,7 +98,7 @@ def send_90_percent_reminders(projects):
 # ========================
 # LOGIC 2: Final Reminder
 # ========================
-def send_final_reminders(projects):
+def send_final_reminders(request ,projects):
     for project in projects:
         global RECEIVER
         RECEIVER, project_title, start_str, duration = project
@@ -111,7 +114,7 @@ def send_final_reminders(projects):
                 print(f"❌ Upload reminder template not found: {e}")
                 continue
 
-            html_body = personalize_template(reminder, project_title, end_date)
+            html_body = personalize_template(request ,reminder, project_title, end_date)
             send_email(
                 subject=f"⚠️ Final Reminder: Project '{project_title}' Ended",
                 html_body=html_body
@@ -120,14 +123,14 @@ def send_final_reminders(projects):
 # ========================
 # LOGIC 3: Invalid URL
 # ========================
-def notify_invalid_publication_url(pub, project_title, end_date):
+def notify_invalid_publication_url(request ,pub, project_title, end_date):
     publication_url_valid = is_valid_download_link(pub.url)
 
     if publication_url_valid == False:
         with open('emails/issue_email.html', 'r', encoding='utf-8') as f:
             issue = f.read()
 
-        html_body = personalize_template(issue, project_title, end_date)
+        html_body = personalize_template(request ,issue, project_title, end_date)
         send_email(
             subject=f"❗ Issue: Invalid Link for '{project_title}' Publication",
             html_body=html_body
@@ -136,7 +139,7 @@ def notify_invalid_publication_url(pub, project_title, end_date):
 # ========================
 # LOGIC 4: Welcome Email
 # ========================
-def send_welcome_email(user):
+def send_welcome_email(request ,user):
     global RECEIVER
     RECEIVER = user.email  # Set email for sending
 
@@ -150,7 +153,7 @@ def send_welcome_email(user):
         print(f"❌ Template file not found: {e}")
         return
 
-    html_body = personalize_welcome_template(template)
+    html_body = personalize_welcome_template(request ,template)
 
     send_email(
         subject="🎉 Welcome to the Publication Tracker!",
