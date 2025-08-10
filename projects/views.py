@@ -196,8 +196,9 @@ def signup(request):
         form = UserCreation(request.POST)
         if form.is_valid():
             user = form.save()
+            auth_login(request, user)
             send_welcome_email(request ,user)
-            return redirect('projects_page')  
+            return redirect('user_dashboard')  
     else:
         form = UserCreation()
 

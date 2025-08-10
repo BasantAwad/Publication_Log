@@ -17,7 +17,7 @@ class Project(models.Model):
         return self.title
 
 class Author(models.Model):
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200, unique=True,null=True, blank=True)
     email=models.EmailField()
 
     def __str__(self):

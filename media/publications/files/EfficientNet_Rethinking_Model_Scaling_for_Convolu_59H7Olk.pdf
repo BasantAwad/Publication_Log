@@ -1,0 +1,19 @@
+
+    \documentclass{acmart}
+    \title{EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks}
+    \author{Michelle Sutton et al.}
+    \setcopyright{rightsretained}
+    
+    \begin{document}
+    \maketitle
+    
+    \begin{abstract}
+    This study addresses critical challenges in machine learning combining computer vision with computer vision. Our approach demonstrates significant improvements in accuracy compared to existing methods. The results have important implications for computer vision and open new directions for future research in machine learning.
+    \end{abstract}
+    
+    \section{Introduction}
+    The field of machine learning faces growing challenges with deep learning scaling issues. We present...
+    \section{Related Work}
+    Prior approaches include computer vision and computer vision, but lack NLP...
+    \end{document}
+    

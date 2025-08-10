@@ -1,0 +1,30 @@
+
+    \documentclass{article}
+    \usepackage{graphicx}
+    \title{Optogenetic Control of Neural Circuits}
+    \author{Grace King et al.}
+    \date{2025}
+    
+    \begin{document}
+    \maketitle
+    
+    \section{Abstract}
+    This study addresses critical challenges in neuroscience combining cognitive science with cognitive science. Our approach demonstrates significant improvements in efficiency compared to existing methods. The results have important implications for brain-computer interface and open new directions for future research in neuroscience.
+    
+    \section{Introduction}
+    This paper addresses cognitive science in neuroscience. Recent advances have enabled new approaches, but
+    limitations remain in brain-computer interface.
+    
+    \section{Methods}
+    We developed a novel approach combining neural circuits with brain-computer interface,
+    implemented using Qiskit.
+    
+    \section{Results}
+    Our evaluation shows 50\% improvement in latency compared to
+    existing techniques (p<0.01).
+    
+    \section{Conclusion}
+    These findings demonstrate significant advances in neuroscience, opening new
+    directions including neural circuits applications.
+    \end{document}
+    
