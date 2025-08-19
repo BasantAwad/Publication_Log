@@ -14,10 +14,8 @@ from django.contrib.auth import login as auth_login
 from .email import send_welcome_email
 from django.contrib.auth import logout
 from django.db.models.functions import ExtractYear
+from django.shortcuts import get_object_or_404, render
 
-
-
-from django.db.models.functions import ExtractYear
 
 def projects_list(request):
     projects = Project.objects.all()
@@ -89,8 +87,7 @@ def add_publication(request, project_id):
 
     return render(request, 'publications/add_publication.html', {'form': form, 'project': project})
 
-from django.shortcuts import get_object_or_404, render
-from .models import Publication
+
 
 def publication_detail(request, pk):
     publication = get_object_or_404(Publication, pk=pk)
