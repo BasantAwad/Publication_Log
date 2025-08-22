@@ -4,7 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 import requests
-from .models import Author, Publication
+from .models import Author, Publication , MessageRequest , Message
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -107,3 +107,14 @@ def fetch_and_save_file_from_url(publication_instance, url):
     except Exception as e:
         print(f"Download failed: {e}")
         return False  # If download fails or invalid
+
+
+class MessageRequestForm(forms.ModelForm):
+    class Meta:
+        model = MessageRequest
+        fields = []
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ['content']

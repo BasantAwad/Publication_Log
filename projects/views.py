@@ -1,19 +1,27 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from .forms import UserUpdateForm
 from django.contrib import messages
-from .models import Project, Publication
-from .forms import PublicationForm
-from .forms import UserCreation
-from django.contrib.admin.views.decorators import staff_member_required
-from projects.models import MatchRequest
-from django.views.decorators.http import require_POST
-from .email import notify_invalid_publication_url
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
-from .email import send_welcome_email
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Q
 from django.db.models.functions import ExtractYear
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from projects.models import MatchRequest
+
+from .email import notify_invalid_publication_url,send_welcome_email
+from .forms import (
+    MessageForm,
+    MessageRequestForm,
+    PublicationForm,
+    UserCreation,
+    UserUpdateForm,
+)
+from .models import Message, MessageRequest, Notification, Project, Publication
 
 # ========================
 # Project Views
@@ -175,21 +183,29 @@ def user_dashboard(request):
     user = request.user
     publications = Publication.objects.filter(author=user)
     collaborated_projects = Project.objects.filter(team=user)
+    profile, _ = UserProfile.objects.get_or_create(user=user)
 
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=user)
+        form = UserUpdateForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
-            messages.success(request, "Your name has been updated.")
+            messages.success(request, "Profile updated.")
             return redirect('user_dashboard')
     else:
         form = UserUpdateForm(instance=user)
+
+    notifications = Notification.objects.filter(user=user, is_read=False)
+    notif_count = notifications.count()
 
     return render(request, 'registration/user_dashboard.html', {
         'user': user,
         'form': form,
         'publications': publications,
-        'collaborated_projects': collaborated_projects
+        'collaborated_projects': collaborated_projects,
+        'profile': profile,
+        'avatar_choices': AVATAR_CHOICES,
+        'notifications': notifications,
+        'notif_count': notif_count,
     })
 
 def administrator_dashboard(request):
@@ -261,3 +277,80 @@ def accept_match_request(request, pk):
         match.save()
     
     return redirect("administrator_dashboard")
+
+@login_required
+def messaging(request):
+    requests_pending = MessageRequest.objects.filter(recipient=request.user, status='pending')
+    conversations = MessageRequest.objects.filter(Q(sender=request.user) | Q(recipient=request.user), status='approved').order_by('-sent_at')
+    notifications = Notification.objects.filter(user=request.user, is_read=False)
+    notif_count = notifications.count()
+    return render(request, 'messaging.html', {
+        'requests_pending': requests_pending,
+        'conversations': conversations,
+        'notifications': notifications,
+        'notif_count': notif_count,
+    })
+
+@login_required
+def message_request(request, user_id):
+    recipient = get_object_or_404(User, pk=user_id)
+    if request.method == "POST":
+        MessageRequest.objects.get_or_create(sender=request.user, recipient=recipient, status='pending')
+        return redirect('messaging')
+    return render(request, 'message_request.html', {'recipient': recipient})
+
+@login_required
+def message_approve(request, request_id):
+    msg_req = get_object_or_404(MessageRequest, pk=request_id, recipient=request.user)
+    if request.method == "POST":
+        msg_req.status = 'approved'
+        msg_req.save()
+        return redirect('messaging')
+    return render(request, 'message_approve.html', {'msg_req': msg_req})
+
+@login_required
+def conversation(request, request_id):
+    msg_req = get_object_or_404(MessageRequest, pk=request_id, status='approved')
+    messages_ = Message.objects.filter(request=msg_req).order_by('sent_at')
+    if request.method == "POST":
+        content = request.POST.get('content')
+        if content:
+            msg = Message.objects.create(
+                sender=request.user,
+                recipient=msg_req.recipient if msg_req.sender == request.user else msg_req.sender,
+                content=content,
+                request=msg_req
+            )
+            Notification.objects.create(user=msg.recipient, message=msg, notification_type="unread_message")
+            send_mail(
+                'New Message Received',
+                f'You have received a new message from {msg.sender.username}: "{msg.content[:100]}"',
+                'noreply@yourdomain.com',
+                [msg.recipient.email],
+                fail_silently=True,
+            )
+        return redirect('conversation', request_id=msg_req.id)
+    Message.objects.filter(request=msg_req, recipient=request.user, is_read=False).update(is_read=True)
+    Notification.objects.filter(user=request.user, message__request=msg_req, is_read=False).update(is_read=True)
+    return render(request, 'conversation.html', {
+        'messages': messages_,
+        'msg_req': msg_req,
+    })
+
+@login_required
+def notifications_api(request):
+    notifs = Notification.objects.filter(user=request.user, is_read=False)
+    notif_list = [{
+        'id': n.id,
+        'text': f'New message from {n.message.sender.username}' if n.message else 'Notification',
+        'created_at': n.created_at.strftime('%Y-%m-%d %H:%M'),
+        'message_url': f'/conversation/{n.message.request.id}/' if n.message else ''
+    } for n in notifs]
+    return JsonResponse({'notifications': notif_list, 'count': notifs.count()})
+
+@login_required
+def mark_notification_read(request, notif_id):
+    notif = get_object_or_404(Notification, pk=notif_id, user=request.user)
+    notif.is_read = True
+    notif.save()
+    return JsonResponse({'success': True})

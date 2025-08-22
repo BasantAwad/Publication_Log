@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Messaging</h2>
+<div style="display:flex;">
+  <div style="width:40%;">
+    <h3>Pending Requests</h3>
+    <ul>
+      {% for req in requests_pending %}
+        <li>{{ req.sender.username }} wants to message you.
+          <form method="post" action="{% url 'message_approve' req.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Approve</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+    <h3>Conversations</h3>
+    <ul>
+      {% for conv in conversations %}
+        <li>
+          Conversation with {{ conv.sender.username if conv.sender != request.user else conv.recipient.username }}
+          <a href="{% url 'conversation' conv.id %}">Open</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div style="width:60%;padding-left:30px;">
+    <h3>Start a new conversation</h3>
+    <form method="get" action="{% url 'message_request' user.id %}">
+      <input type="text" name="username" placeholder="Enter username to message" required style="width:60%">
+      <button type="submit">Send Request</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,17 +1,24 @@
 # Simple Mail Transfer Protocol
-import smtplib, ssl
 import datetime as datetime
-from email.mime.text import MIMEText
+from datetime import timedelta
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import os
+import smtplib
+import ssl
+
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.utils import timezone
+
+
 from .models import UploadToken
-from .utils import is_valid_download_link
 from .models import Publication
 from .models import Author
-from django.contrib.auth.models import User
-import requests
-import os
+from .models import Message
+from .utils import is_valid_download_link
 
 # ========================
 # EMAIL CONFIGURATION
@@ -197,3 +204,18 @@ def send_welcome_email(request, user):
         subject="🎉 Welcome to the Publication Tracker!",
         html_body=html_body
     )
+
+
+
+
+def send_unread_message_reminders():
+    threshold = timezone.now() - timedelta(hours=2)
+    unread = Message.objects.filter(is_read=False, sent_at__lt=threshold)
+    for msg in unread:
+        send_mail(
+            'Reminder: Unread Message',
+            f'You still have an unread message from {msg.sender.username}.',
+            'noreply@yourdomain.com',
+            [msg.recipient.email],
+            fail_silently=True,
+        )

@@ -31,6 +31,8 @@ class Author(models.Model):
     name = models.CharField(max_length=200, unique=True,null=True, blank=True)
     # Author's email address
     email=models.EmailField()
+    
+    profile_picture = models.ImageField(upload_to='author_pics/', blank=True, null=True)
 
     # Returns the author's name when the object is printed
     def __str__(self):
@@ -161,3 +163,46 @@ class UploadToken(models.Model):
     # Returns a string describing the token and user
     def __str__(self):
         return f"Token for {self.user.username}"
+
+
+
+AVATAR_CHOICES = [
+    ("avatars/avatar1.png", "Avatar 1"),
+    ("avatars/avatar2.png", "Avatar 2"),
+    ("avatars/avatar3.png", "Avatar 3"),
+    ("avatars/avatar4.png", "Avatar 4"),
+]
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    selected_avatar = models.CharField(max_length=100, choices=AVATAR_CHOICES, blank=True, null=True)
+    is_online = models.BooleanField(default=False)
+    def get_avatar_url(self):
+        if self.avatar:
+            return self.avatar.url
+        elif self.selected_avatar:
+            return f'/static/{self.selected_avatar}'
+        return '/static/avatars/default.png'
+
+
+class MessageRequest(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_requests')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_requests')
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_sent')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_received')
+    content = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    request = models.ForeignKey(MessageRequest, on_delete=models.CASCADE)
+    
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.ForeignKey('Message', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    notification_type = models.CharField(max_length=50, default="unread_message")
