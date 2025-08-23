@@ -19,7 +19,10 @@
   <ul class="nav-links">
      <li><a href="{% url 'projects_page' %}">Home</a></li>
      <li><a href="{% url 'login' %}">Login</a></li>
-     <li><a href="{% url 'publication_list' %}">Publications</a></li> <!-- أضفت هذا الرابط -->
+     <li><a href="{% url 'publication_list' %}">Publications</a></li>
+     {% if user.is_authenticated %}
+       <li><a href="{% url 'messaging_home' %}" title="Messages">💬</a></li>
+     {% endif %}
      {% if user.is_superuser %}
        <li><a class="glyphicon glyphicon-user" href="{% url 'administrator_dashboard' %}"></a></li>
      {% else %}

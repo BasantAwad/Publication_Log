@@ -11,8 +11,14 @@ from projects.AI.nlp_ba_model_1_with_adminreq_ import match_projects_and_papers
 
 @receiver(post_save, sender=Publication)
 def run_ai_matching(sender, instance, created, **kwargs):
+    from django.conf import settings
+    
     if os.environ.get("SEEDING") == "true":
         return  # Skip during seed
+    
+    # Skip if signals are disabled (for testing)
+    if getattr(settings, 'SIGNALS_ENABLED', True) is False:
+        return
     
     match_projects_and_papers(publication=instance)
 

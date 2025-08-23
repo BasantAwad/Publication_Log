@@ -151,20 +151,37 @@
     <div class="publication-info">
         <p><span>📅 Year:</span> {{ publication.year }}</p>
         <p><span>📄 Type:</span> {{ publication.type }}</p>
+        <p><span>👨‍💼 Primary Author:</span> 
+            {% if publication.primary_author %}
+                <a href="{% url 'author_profile' publication.primary_author.id %}" style="color: #2563eb; text-decoration: none; font-weight: 500;">{{ publication.primary_author.name }}</a> ({{ publication.primary_author.email }})
+            {% else %}
+                No primary author
+            {% endif %}
+        </p>
+        <p><span>👥 All Authors:</span> 
+            {% if publication.primary_author %}
+                <a href="{% url 'author_profile' publication.primary_author.id %}" style="color: #2563eb; text-decoration: none; font-weight: 500;">{{ publication.primary_author.name }}</a>
+                {% if publication.collaborators.all %}
+                    {% for collaborator in publication.collaborators.all %}
+                        , <a href="{% url 'author_profile' collaborator.id %}" style="color: #2563eb; text-decoration: none; font-weight: 500;">{{ collaborator.name }}</a>
+                    {% endfor %}
+                {% endif %}
+            {% else %}
+                {{ publication.get_authors_display }}
+            {% endif %}
+        </p>
+        <p><span>🏢 Institution:</span> 
+            {% if publication.primary_author and publication.primary_author.institution %}
+                {{ publication.primary_author.institution }}
+            {% else %}
+                Not specified
+            {% endif %}
+        </p>
         <p><span>🔗 URL:</span> 
             <a href="{{ publication.url }}" target="_blank">{{ publication.url }}</a>
         </p>
-        <p><span>👥 Collaborators:</span>
-    {% with publication.collaborators.all as collaborators %}
-        {% if collaborators %}
-            {% for collaborators in collaborators %}
-                {{ collaborators.name }}{% if not forloop.last %}, {% endif %}
-            {% endfor %}
-        {% else %}
-            No collaborators listed.
-        {% endif %}
-    {% endwith %}
-</p>
+        <p><span>📋 Abstract:</span> {{ publication.abstract }}</p>
+        <p><span>🏗️ Project:</span> {{ publication.project.title }}</p>
 
 
     </div>

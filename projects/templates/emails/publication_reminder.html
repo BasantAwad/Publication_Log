@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual PDF Upload Required</title>
+    <title>Publication Upload Reminder</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,7 +22,7 @@
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -35,53 +35,37 @@
         .content {
             padding: 40px 30px;
         }
-        .alert-box {
-            background-color: #f8d7da;
-            border: 2px solid #dc3545;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .alert-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .publication-info {
+        .project-info {
             background-color: #f0f8ff;
             border: 2px solid #007bff;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
         }
-        .publication-title {
+        .project-title {
             font-weight: 600;
             color: #007bff;
             font-size: 18px;
             margin-bottom: 10px;
         }
-        .issue-list {
+        .project-details {
+            color: #666;
+            font-size: 14px;
+        }
+        .reminder-box {
             background-color: #fff3cd;
             border: 1px solid #ffeaa7;
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px;
             margin: 20px 0;
         }
-        .issue-list h3 {
-            color: #856404;
-            margin-top: 0;
-        }
-        .issue-list ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .issue-list li {
-            margin-bottom: 5px;
-            color: #856404;
+        .reminder-icon {
+            font-size: 24px;
+            margin-right: 10px;
         }
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
             padding: 12px 24px;
             text-decoration: none;
@@ -108,57 +92,67 @@
             color: #6c757d;
             font-size: 14px;
         }
+        .deadline {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .deadline-text {
+            color: #721c24;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>⚠️ Manual PDF Upload Required</h1>
+            <h1>📚 Publication Upload Reminder</h1>
         </div>
         
         <div class="content">
-            <div class="alert-box">
-                <div class="alert-icon">📄</div>
-                <p style="text-align: center; margin: 0; font-weight: 600; color: #721c24;">
-                    PDF Retrieval Failed - Manual Upload Required
-                </p>
+            <p>Dear <strong>{{ author_name }}</strong>,</p>
+            
+            <div class="reminder-box">
+                <span class="reminder-icon">⏰</span>
+                <strong>This is a friendly reminder</strong> to upload your publication for the following project:
             </div>
             
-            <p>We noticed that you submitted a link for your publication:</p>
-            
-            <div class="publication-info">
-                <div class="publication-title">{{ publication_title }}</div>
+            <div class="project-info">
+                <div class="project-title">{{ project_title }}</div>
+                <div class="project-details">
+                    <strong>Domain:</strong> {{ project_domain }}<br>
+                    <strong>Duration:</strong> {{ project_duration }}<br>
+                    <strong>Start Date:</strong> {{ project_start_date }}<br>
+                    <strong>End Date:</strong> {{ project_end_date }}
+                </div>
             </div>
             
-            <p>Unfortunately, we were unable to automatically download the PDF from the provided link due to one of the following reasons:</p>
-            
-            <div class="issue-list">
-                <h3>🔍 Possible Issues:</h3>
-                <ul>
-                    <li>The PDF is behind a paywall or requires login</li>
-                    <li>The link is not a direct PDF file</li>
-                    <li>Access was denied or the link is broken</li>
-                    <li>The file is hosted on a restricted server</li>
-                </ul>
+            {% if deadline %}
+            <div class="deadline">
+                <div class="deadline-text">⏳ Deadline: {{ deadline }}</div>
             </div>
+            {% endif %}
             
-            <p>Please upload the publication PDF manually using the link below:</p>
+            <p>If you have completed any publications related to this project, please upload them using the secure link below:</p>
             
             <div class="action-buttons">
-                <a href="{{ upload_link }}" class="btn">📄 Upload PDF Manually</a>
+                <a href="{{ site_url }}/publications/add/{{ project_id }}/" class="btn">📄 Upload Publication</a>
             </div>
             
             <p style="color: #6c757d; font-size: 14px;">
-                Thank you for helping us maintain a complete publication archive.
+                If you have already uploaded your publications, thank you! No further action is needed.
             </p>
             
             <p style="color: #6c757d; font-size: 14px;">
-                If you've already uploaded the PDF manually, feel free to ignore this email.
+                You can also access your project dashboard to view all your publications and project details.
             </p>
         </div>
         
         <div class="footer">
-            <p>This is an automated notification from Publication Log</p>
+            <p>This is an automated reminder from Publication Log</p>
             <p>© 2024 Publication Log. All rights reserved.</p>
         </div>
     </div>

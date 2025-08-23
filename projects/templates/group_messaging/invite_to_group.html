@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invite to {{ group.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .invite-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+    }
+
+    .group-info {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #667eea;
+    }
+
+    .group-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 10px;
+    }
+
+    .group-meta {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .invite-form {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section h3 {
+        color: #495057;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .users-selection {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        background: #f8f9fa;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .user-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-item.selected {
+        border-color: #28a745;
+        background: #f8fff9;
+    }
+
+    .user-checkbox {
+        margin-right: 15px;
+        transform: scale(1.2);
+    }
+
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #6c757d;
+        margin-right: 15px;
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 3px;
+        font-size: 1rem;
+    }
+
+    .user-institution {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 2px;
+    }
+
+    .user-email {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .selected-users {
+        margin-top: 20px;
+        padding: 15px;
+        background: #e8f5e8;
+        border-radius: 8px;
+        border: 1px solid #c3e6cb;
+    }
+
+    .selected-users h4 {
+        color: #155724;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .selected-user-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .selected-user-tag {
+        background: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .selected-user-tag .remove-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 0.8rem;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .selected-user-tag .remove-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #e9ecef;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a6fd8;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .no-users {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+
+    .no-users-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    .no-users h3 {
+        margin-bottom: 10px;
+        color: #495057;
+    }
+
+    .no-users p {
+        font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .invite-form {
+            padding: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .user-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .user-checkbox {
+            margin-right: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invite-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Invite to Group</h1>
+        <p>Add new members to your group chat</p>
+    </div>
+
+    <!-- Group Info -->
+    <div class="group-info">
+        <div class="group-name">{{ group.name }}</div>
+        <div class="group-meta">
+            {{ group.members.count }} current members • Created {{ group.created_at|date:"M j, Y" }}
+        </div>
+        {% if group.description %}
+        <div class="group-meta" style="margin-top: 10px;">
+            {{ group.description }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Invite Form -->
+    <form method="post" class="invite-form">
+        {% csrf_token %}
+
+        <!-- Message Section -->
+        <div class="form-section">
+            <h3>💬 Invitation Message</h3>
+            <div class="form-group">
+                <label for="message" class="form-label">Personal Message (Optional)</label>
+                <textarea id="message" name="message" class="form-control" rows="4" placeholder="Add a personal message to your invitation..."></textarea>
+                <div class="form-text">This message will be included with the invitation</div>
+            </div>
+        </div>
+
+        <!-- User Selection -->
+        <div class="form-section">
+            <h3>👥 Select Users to Invite</h3>
+            <div class="search-box">
+                <input type="text" id="user-search" placeholder="Search users by name or institution..." onkeyup="filterUsers()">
+            </div>
+            
+            <div class="users-selection">
+                {% if potential_invitees %}
+                    {% for user in potential_invitees %}
+                    <div class="user-item" data-name="{{ user.author.name|lower }}" data-institution="{{ user.author.institution|lower }}">
+                        <input type="checkbox" name="invitees" value="{{ user.id }}" class="user-checkbox" onchange="updateSelectedUsers()">
+                        <div class="user-avatar">
+                            {% if user.author.profile_picture %}
+                                <img src="{{ user.author.profile_picture.url }}" alt="{{ user.author.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                {{ user.author.name|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.author.name }}</div>
+                            {% if user.author.institution %}
+                            <div class="user-institution">{{ user.author.institution }}</div>
+                            {% endif %}
+                            <div class="user-email">{{ user.author.email }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-users">
+                        <div class="no-users-icon">👥</div>
+                        <h3>No users available</h3>
+                        <p>All eligible users are already members of this group.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="selected-users" id="selected-users" style="display: none;">
+                <h4>Selected Users (<span id="selected-count">0</span>)</h4>
+                <div class="selected-user-tags" id="selected-tags"></div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" {% if not potential_invitees %}disabled{% endif %}>📨 Send Invitations</button>
+            <a href="{% url 'group_chat' group.id %}" class="btn btn-secondary">❌ Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function filterUsers() {
+    const searchTerm = document.getElementById('user-search').value.toLowerCase();
+    const userItems = document.querySelectorAll('.user-item');
+    
+    userItems.forEach(item => {
+        const userName = item.getAttribute('data-name');
+        const userInstitution = item.getAttribute('data-institution');
+        
+        if (userName.includes(searchTerm) || userInstitution.includes(searchTerm)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function updateSelectedUsers() {
+    const checkboxes = document.querySelectorAll('input[name="invitees"]:checked');
+    const selectedUsersDiv = document.getElementById('selected-users');
+    const selectedTagsDiv = document.getElementById('selected-tags');
+    const selectedCountSpan = document.getElementById('selected-count');
+    
+    if (checkboxes.length > 0) {
+        selectedUsersDiv.style.display = 'block';
+        selectedCountSpan.textContent = checkboxes.length;
+        
+        selectedTagsDiv.innerHTML = '';
+        checkboxes.forEach(checkbox => {
+            const userItem = checkbox.closest('.user-item');
+            const userName = userItem.querySelector('.user-name').textContent;
+            
+            const tag = document.createElement('span');
+            tag.className = 'selected-user-tag';
+            tag.innerHTML = `
+                ${userName}
+                <button type="button" class="remove-btn" onclick="removeUser('${checkbox.value}')">×</button>
+            `;
+            selectedTagsDiv.appendChild(tag);
+        });
+    } else {
+        selectedUsersDiv.style.display = 'none';
+    }
+}
+
+function removeUser(userId) {
+    const checkbox = document.querySelector(`input[name="invitees"][value="${userId}"]`);
+    if (checkbox) {
+        checkbox.checked = false;
+        updateSelectedUsers();
+    }
+}
+
+// Initialize selected users display
+updateSelectedUsers();
+</script>
+{% endblock %}

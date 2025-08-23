@@ -13,7 +13,6 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.utils import timezone
 
-
 from .models import UploadToken
 from .models import Publication
 from .models import Author
@@ -29,8 +28,8 @@ SENDER = 'basantawad014@gmail.com'
 EMAIL_PASSWORD = 'yuef auqt aohq razb'  # App password
 
 # RECEIVER_NAME: Default receiver name. Used for template personalization. 
-# (Note: This is set from Publication.author, but is later overridden by logic per email.)
-RECEIVER_NAME = Publication.author
+# (Note: This is set from Publication.primary_author, but is later overridden by logic per email.)
+RECEIVER_NAME = "Test Author"
 
 def get_author_by_name(name):
     """Helper to get an Author object by its name."""
@@ -219,3 +218,195 @@ def send_unread_message_reminders():
             [msg.recipient.email],
             fail_silently=True,
         )
+
+# ========================
+# MESSAGING EMAIL FUNCTIONS
+# ========================
+
+def send_message_notification_email(recipient, sender, message_content):
+    """Send email notification for new messages"""
+    try:
+        from django.template.loader import render_to_string
+        from django.utils import timezone
+        
+        subject = f"New message from {sender.username}"
+        
+        context = {
+            'sender_name': sender.username,
+            'message_preview': message_content[:200] + ('...' if len(message_content) > 200 else ''),
+            'timestamp': timezone.now().strftime("%B %d, %Y at %I:%M %p"),
+            'site_url': settings.SITE_URL,
+        }
+        
+        html_content = render_to_string('emails/message_notification.html', context)
+        
+        send_email(subject, html_content, recipient.email)
+        return True
+    except Exception as e:
+        print(f"Failed to send message notification email: {e}")
+        return False
+
+def send_message_request_email(recipient, sender, request_message):
+    """Send email notification for message requests"""
+    try:
+        from django.template.loader import render_to_string
+        from django.utils import timezone
+        
+        subject = f"Message request from {sender.username}"
+        
+        context = {
+            'sender_name': sender.username,
+            'request_message': request_message,
+            'timestamp': timezone.now().strftime("%B %d, %Y at %I:%M %p"),
+            'site_url': settings.SITE_URL,
+            'request_id': '{{ request_id }}',  # This will be replaced by the view
+        }
+        
+        html_content = render_to_string('emails/message_request.html', context)
+        
+        send_email(subject, html_content, recipient.email)
+        return True
+    except Exception as e:
+        print(f"Failed to send message request email: {e}")
+        return False
+
+def send_request_approved_email(recipient, approver):
+    """Send email notification when message request is approved"""
+    try:
+        from django.template.loader import render_to_string
+        from django.utils import timezone
+        
+        subject = f"Message request approved by {approver.username}"
+        
+        context = {
+            'approver_name': approver.username,
+            'timestamp': timezone.now().strftime("%B %d, %Y at %I:%M %p"),
+            'site_url': settings.SITE_URL,
+        }
+        
+        html_content = render_to_string('emails/request_approved.html', context)
+        
+        send_email(subject, html_content, recipient.email)
+        return True
+    except Exception as e:
+        print(f"Failed to send request approved email: {e}")
+        return False
+
+def send_group_message_notification_email(recipients, sender, group_name, message_content, group_id=None):
+    """Send email notification for group messages"""
+    try:
+        from django.template.loader import render_to_string
+        from django.utils import timezone
+        
+        subject = f"New group message in '{group_name}' from {sender.username}"
+        
+        context = {
+            'sender_name': sender.username,
+            'group_name': group_name,
+            'group_id': group_id,
+            'message_preview': message_content[:200] + ('...' if len(message_content) > 200 else ''),
+            'timestamp': timezone.now().strftime("%B %d, %Y at %I:%M %p"),
+            'site_url': settings.SITE_URL,
+            'member_count': len(recipients) + 1,  # +1 for sender
+        }
+        
+        html_content = render_to_string('emails/group_message_notification.html', context)
+        
+        for recipient in recipients:
+            send_email(subject, html_content, recipient.email)
+        return True
+    except Exception as e:
+        print(f"Failed to send group message notification email: {e}")
+        return False
+
+# ========================
+# ENHANCED EMAIL FUNCTIONS
+# ========================
+
+def send_email(subject, html_body, recipient_email=None):
+    """
+    Enhanced email sending function that can handle both global and specific recipients
+    """
+    global RECEIVER
+    
+    if recipient_email:
+        RECEIVER = recipient_email
+    
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = SENDER
+    msg['To'] = RECEIVER
+    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+            smtp.starttls(context=context)
+            smtp.login(SENDER, EMAIL_PASSWORD)
+            smtp.sendmail(SENDER, RECEIVER, msg.as_string())
+            print(f"✅ Email sent to {RECEIVER}")
+            return True
+    except Exception as e:
+        print(f"❌ Failed to send to {RECEIVER}: {e}")
+        return False
+
+def send_publication_reminder_email(author, publication, project):
+    """Send reminder email for publication upload"""
+    try:
+        from django.template.loader import render_to_string
+        
+        subject = f"Reminder: Upload Publication for '{project.title}'"
+        
+        context = {
+            'author_name': author.name,
+            'project_title': project.title,
+            'project_domain': project.domain,
+            'project_duration': project.duration,
+            'project_start_date': project.start_date.strftime("%B %d, %Y") if project.start_date else "Not specified",
+            'project_end_date': project.end_date.strftime("%B %d, %Y") if project.end_date else "Not specified",
+            'project_id': project.id,
+            'site_url': settings.SITE_URL,
+            'deadline': project.end_date.strftime("%B %d, %Y") if project.end_date else None,
+        }
+        
+        html_content = render_to_string('emails/publication_reminder.html', context)
+        
+        send_email(subject, html_content, author.email)
+        return True
+    except Exception as e:
+        print(f"Failed to send publication reminder email: {e}")
+        return False
+
+def send_publication_upload_confirmation(author, publication, project):
+    """Send confirmation email when publication is uploaded"""
+    try:
+        from django.template.loader import render_to_string
+        from django.utils import timezone
+        
+        subject = f"Publication Uploaded: '{publication.title}'"
+        
+        # Get all authors for display
+        authors_list = [author.name]
+        if publication.collaborators.all():
+            authors_list.extend([collab.name for collab in publication.collaborators.all()])
+        authors_display = ", ".join(authors_list)
+        
+        context = {
+            'author_name': author.name,
+            'publication_title': publication.title,
+            'publication_type': publication.type,
+            'publication_year': publication.year,
+            'publication_authors': authors_display,
+            'publication_abstract': publication.abstract if publication.abstract else None,
+            'publication_id': publication.id,
+            'project_title': project.title,
+            'timestamp': timezone.now().strftime("%B %d, %Y at %I:%M %p"),
+            'site_url': settings.SITE_URL,
+        }
+        
+        html_content = render_to_string('emails/publication_confirmation.html', context)
+        
+        send_email(subject, html_content, author.email)
+        return True
+    except Exception as e:
+        print(f"Failed to send publication confirmation email: {e}")
+        return False

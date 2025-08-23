@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ author.name }} - Author Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .author-profile {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+
+    .profile-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        object-fit: cover;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: #6c757d;
+    }
+
+    .profile-info h1 {
+        margin: 0 0 10px 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .profile-info .institution {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 15px;
+    }
+
+    .profile-stats {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .profile-actions {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 3;
+    }
+
+    .action-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 8px 16px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        margin-left: 10px;
+    }
+
+    .action-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .profile-details {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-section {
+        margin-bottom: 25px;
+    }
+
+    .detail-section h3 {
+        color: #495057;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .detail-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .detail-value {
+        color: #212529;
+        font-size: 1rem;
+    }
+
+    .research-interests {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .interest-tag {
+        background: #007bff;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+    }
+
+    .publications-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .publications-section h2 {
+        color: #495057;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+    }
+
+    .publication-item {
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .publication-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .publication-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 8px;
+    }
+
+    .publication-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .publication-type {
+        background: #28a745;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+
+    .publication-abstract {
+        color: #495057;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .no-publications {
+        text-align: center;
+        color: #6c757d;
+        padding: 40px;
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .profile-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-actions {
+            position: static;
+            margin-top: 20px;
+        }
+
+        .profile-stats {
+            justify-content: center;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="author-profile">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-actions">
+            {% if can_message %}
+                {% if interaction_status == 'no_interaction' %}
+                    <a href="{% url 'messaging_home' %}" class="action-btn">💬 Message</a>
+                {% elif interaction_status == 'approved' %}
+                    <a href="{% url 'messaging_home' %}" class="action-btn">💬 Chat</a>
+                {% elif interaction_status == 'request_sent' %}
+                    <span class="action-btn">⏳ Request Sent</span>
+                {% elif interaction_status == 'request_received' %}
+                    <a href="{% url 'messaging_home' %}" class="action-btn">✅ Respond</a>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-avatar">
+                {% if author.profile_picture %}
+                    <img src="{{ author.profile_picture.url }}" alt="{{ author.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                {% else %}
+                    {{ author.name|first|upper }}
+                {% endif %}
+            </div>
+
+            <div class="profile-info">
+                <h1>{{ author.name }}</h1>
+                {% if author.institution %}
+                    <div class="institution">{{ author.institution }}</div>
+                {% endif %}
+                {% if author.department %}
+                    <div class="institution">{{ author.department }}</div>
+                {% endif %}
+
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ publications.count }}</span>
+                        <span class="stat-label">Publications</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">{{ author.get_publications_count }}</span>
+                        <span class="stat-label">Total Works</span>
+                    </div>
+                    {% if author.orcid_id %}
+                    <div class="stat-item">
+                        <span class="stat-number">ORCID</span>
+                        <span class="stat-label">{{ author.orcid_id }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Details -->
+    <div class="profile-details">
+        <div class="detail-section">
+            <h3>📋 Research Information</h3>
+            <div class="detail-grid">
+                {% if author.research_interests %}
+                <div class="detail-item">
+                    <div class="detail-label">Research Interests</div>
+                    <div class="detail-value">
+                        <div class="research-interests">
+                            {% for interest in author.get_research_interests_list %}
+                                <span class="interest-tag">{{ interest }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if author.institution %}
+                <div class="detail-item">
+                    <div class="detail-label">Institution</div>
+                    <div class="detail-value">{{ author.institution }}</div>
+                </div>
+                {% endif %}
+
+                {% if author.department %}
+                <div class="detail-item">
+                    <div class="detail-label">Department</div>
+                    <div class="detail-value">{{ author.department }}</div>
+                </div>
+                {% endif %}
+
+                {% if author.orcid_id %}
+                <div class="detail-item">
+                    <div class="detail-label">ORCID ID</div>
+                    <div class="detail-value">
+                        <a href="https://orcid.org/{{ author.orcid_id }}" target="_blank" style="color: #007bff;">
+                            {{ author.orcid_id }}
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="detail-item">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">{{ author.email }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Profile Created</div>
+                    <div class="detail-value">{{ author.created_at|date:"F j, Y" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publications Section -->
+    <div class="publications-section">
+        <h2>📚 Publications ({{ publications.count }})</h2>
+        
+        {% if publications %}
+            {% for publication in publications %}
+            <div class="publication-item">
+                <div class="publication-title">
+                    <a href="{% url 'publication_detail' publication.id %}" style="color: inherit; text-decoration: none;">
+                        {{ publication.title }}
+                    </a>
+                </div>
+                <div class="publication-meta">
+                    <span><strong>Year:</strong> {{ publication.year }}</span>
+                    <span class="publication-type">{{ publication.type }}</span>
+                    <span><strong>Project:</strong> {{ publication.project.title }}</span>
+                </div>
+                {% if publication.abstract and publication.abstract != "No abstract yet" %}
+                <div class="publication-abstract">
+                    {{ publication.abstract|truncatewords:30 }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-publications">
+                <p>No publications found for this author.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - {{ user.author.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .edit-profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .edit-profile-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .edit-profile-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+    }
+
+    .edit-form {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section h3 {
+        color: #495057;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control.error {
+        border-color: #dc3545;
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .form-text.error {
+        color: #dc3545;
+    }
+
+    .form-text.success {
+        color: #28a745;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-row .form-group {
+        margin-bottom: 0;
+    }
+
+    .research-interests-container {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        background: #f8f9fa;
+        min-height: 100px;
+    }
+
+    .interest-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .interest-tag {
+        background: #007bff;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .interest-tag .remove-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 0.8rem;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .interest-tag .remove-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .add-interest-form {
+        display: flex;
+        gap: 10px;
+    }
+
+    .add-interest-form input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .add-interest-form button {
+        padding: 8px 16px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .add-interest-form button:hover {
+        background: #218838;
+    }
+
+    .profile-picture-section {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .current-picture {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #e9ecef;
+        object-fit: cover;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: #6c757d;
+    }
+
+    .picture-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .picture-upload input[type="file"] {
+        display: none;
+    }
+
+    .picture-upload label {
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background 0.3s ease;
+    }
+
+    .picture-upload label:hover {
+        background: #0056b3;
+    }
+
+    .picture-upload .remove-picture {
+        background: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .picture-upload .remove-picture:hover {
+        background: #c82333;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #e9ecef;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a6fd8;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+        color: white;
+        text-decoration: none;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .edit-form {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-profile-container">
+    <!-- Header -->
+    <div class="edit-profile-header">
+        <h1>Edit Profile</h1>
+        <p>Update your research profile information</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Edit Form -->
+    <form method="post" enctype="multipart/form-data" class="edit-form">
+        {% csrf_token %}
+
+        <!-- Profile Picture Section -->
+        <div class="form-section">
+            <h3>📸 Profile Picture</h3>
+            <div class="profile-picture-section">
+                <div class="current-picture">
+                    {% if author.profile_picture %}
+                        <img src="{{ author.profile_picture.url }}" alt="{{ author.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                        {{ author.name|first|upper }}
+                    {% endif %}
+                </div>
+                <div class="picture-upload">
+                    <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                    <label for="profile_picture">📁 Choose New Picture</label>
+                    {% if author.profile_picture %}
+                        <button type="button" class="remove-picture" onclick="removeProfilePicture()">🗑️ Remove Picture</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h3>👤 Basic Information</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name" class="form-label">Full Name *</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ author.name }}" required>
+                    <div class="form-text">Your full name as it appears in publications</div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ author.email }}" required>
+                    <div class="form-text">Your primary email address</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Institution Information -->
+        <div class="form-section">
+            <h3>🏛️ Institution Information</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="institution" class="form-label">Institution</label>
+                    <input type="text" id="institution" name="institution" class="form-control" value="{{ author.institution }}">
+                    <div class="form-text">Your university, research institute, or organization</div>
+                </div>
+                <div class="form-group">
+                    <label for="department" class="form-label">Department</label>
+                    <input type="text" id="department" name="department" class="form-control" value="{{ author.department }}">
+                    <div class="form-text">Your department, faculty, or research group</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Research Information -->
+        <div class="form-section">
+            <h3>🔬 Research Information</h3>
+            <div class="form-group">
+                <label for="orcid_id" class="form-label">ORCID ID</label>
+                <input type="text" id="orcid_id" name="orcid_id" class="form-control" value="{{ author.orcid_id }}" placeholder="0000-0000-0000-0000">
+                <div class="form-text">Your ORCID identifier (optional but recommended)</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Research Interests</label>
+                <div class="research-interests-container">
+                    <div class="interest-tags" id="interest-tags">
+                        {% for interest in author.get_research_interests_list %}
+                            <span class="interest-tag">
+                                {{ interest }}
+                                <button type="button" class="remove-btn" onclick="removeInterest(this)">×</button>
+                            </span>
+                        {% endfor %}
+                    </div>
+                    <div class="add-interest-form">
+                        <input type="text" id="new-interest" placeholder="Add research interest...">
+                        <button type="button" onclick="addInterest()">Add</button>
+                    </div>
+                </div>
+                <input type="hidden" id="research_interests" name="research_interests" value="{{ author.research_interests }}">
+                <div class="form-text">Add your research areas and interests</div>
+            </div>
+        </div>
+
+        <!-- Biography -->
+        <div class="form-section">
+            <h3>📝 Biography</h3>
+            <div class="form-group">
+                <label for="biography" class="form-label">Biography</label>
+                <textarea id="biography" name="biography" class="form-control" rows="6" placeholder="Tell us about your research background, achievements, and interests...">{{ author.biography }}</textarea>
+                <div class="form-text">A brief description of your research background and interests</div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+            <a href="{% url 'author_profile' author.id %}" class="btn btn-secondary">❌ Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Profile picture handling
+document.getElementById('profile_picture').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const currentPicture = document.querySelector('.current-picture');
+            currentPicture.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+function removeProfilePicture() {
+    if (confirm('Are you sure you want to remove your profile picture?')) {
+        // Add a hidden input to indicate picture removal
+        const form = document.querySelector('form');
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'remove_picture';
+        hiddenInput.value = 'true';
+        form.appendChild(hiddenInput);
+        
+        // Update the display
+        const currentPicture = document.querySelector('.current-picture');
+        currentPicture.innerHTML = '{{ author.name|first|upper }}';
+        
+        // Remove the file input value
+        document.getElementById('profile_picture').value = '';
+    }
+}
+
+// Research interests handling
+function addInterest() {
+    const input = document.getElementById('new-interest');
+    const interest = input.value.trim();
+    
+    if (interest) {
+        const tagsContainer = document.getElementById('interest-tags');
+        const tag = document.createElement('span');
+        tag.className = 'interest-tag';
+        tag.innerHTML = `
+            ${interest}
+            <button type="button" class="remove-btn" onclick="removeInterest(this)">×</button>
+        `;
+        tagsContainer.appendChild(tag);
+        
+        input.value = '';
+        updateInterestsField();
+    }
+}
+
+function removeInterest(button) {
+    button.parentElement.remove();
+    updateInterestsField();
+}
+
+function updateInterestsField() {
+    const tags = document.querySelectorAll('.interest-tag');
+    const interests = Array.from(tags).map(tag => tag.textContent.replace('×', '').trim());
+    document.getElementById('research_interests').value = interests.join(', ');
+}
+
+// Handle Enter key in interest input
+document.getElementById('new-interest').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addInterest();
+    }
+});
+
+// Initialize interests field
+updateInterestsField();
+</script>
+{% endblock %}

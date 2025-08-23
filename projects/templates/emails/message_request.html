@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Alert</title>
+    <title>Message Request</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,7 +22,7 @@
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -35,35 +35,47 @@
         .content {
             padding: 40px 30px;
         }
-        .alert-box {
-            background-color: #fff3cd;
-            border: 2px solid #fd7e14;
+        .request-info {
+            background-color: #f8fff9;
+            border: 2px solid #28a745;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
         }
-        .alert-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            text-align: center;
+        .sender-name {
+            font-weight: 600;
+            color: #28a745;
+            font-size: 18px;
+            margin-bottom: 10px;
         }
-        .alert-message {
+        .request-message {
             background-color: #f8f9fa;
-            border-left: 4px solid #fd7e14;
+            border-left: 4px solid #28a745;
             padding: 15px;
             margin: 15px 0;
             border-radius: 0 8px 8px 0;
         }
+        .message-text {
+            font-style: italic;
+            color: #666;
+            margin: 0;
+        }
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
-            color: white;
             padding: 12px 24px;
             text-decoration: none;
             border-radius: 25px;
             font-weight: 600;
             margin: 10px 5px;
             transition: transform 0.2s ease;
+        }
+        .btn-approve {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-reject {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
         }
         .btn:hover {
             transform: translateY(-2px);
@@ -83,61 +95,47 @@
             color: #6c757d;
             font-size: 14px;
         }
-        .priority-high {
-            background-color: #f8d7da;
-            border-color: #dc3545;
-        }
-        .priority-medium {
-            background-color: #fff3cd;
-            border-color: #fd7e14;
-        }
-        .priority-low {
-            background-color: #d1ecf1;
-            border-color: #17a2b8;
+        .timestamp {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>⚠️ Important System Notification</h1>
+            <h1>🤝 New Message Request</h1>
         </div>
         
         <div class="content">
-            <p>Dear <strong>{{ recipient_name }}</strong>,</p>
-            
-            <div class="alert-box">
-                <div class="alert-icon">🔔</div>
-                <p style="text-align: center; margin: 0; font-weight: 600; color: #856404;">
-                    System Alert - Action Required
-                </p>
+            <div class="request-info">
+                <div class="sender-name">{{ sender_name }}</div>
+                <div class="timestamp">Request sent at {{ timestamp }}</div>
             </div>
             
-            <div class="alert-message">
-                <p style="margin: 0; font-style: italic; color: #666;">
-                    "{{ alert_message }}"
-                </p>
-            </div>
+            <p><strong>{{ sender_name }}</strong> wants to start a conversation with you.</p>
             
-            {% if action_link %}
-            <p>Please take the necessary action by clicking the button below:</p>
-            
-            <div class="action-buttons">
-                <a href="{{ action_link }}" class="btn">🔧 Take Action</a>
+            {% if request_message %}
+            <div class="request-message">
+                <p class="message-text">"{{ request_message }}"</p>
             </div>
             {% endif %}
             
-            <p style="color: #6c757d; font-size: 14px;">
-                If you have any questions or need assistance, please contact our support team.
-            </p>
+            <p>You can approve or reject this request:</p>
+            
+            <div class="action-buttons">
+                <a href="{{ site_url }}/messaging/approve-request/{{ request_id }}/" class="btn btn-approve">✅ Approve Request</a>
+                <a href="{{ site_url }}/messaging/reject-request/{{ request_id }}/" class="btn btn-reject">❌ Reject Request</a>
+            </div>
             
             <p style="color: #6c757d; font-size: 14px;">
-                This is an automated system notification. Please do not reply to this email.
+                You can also manage this request from the messaging interface on our platform.
             </p>
         </div>
         
         <div class="footer">
-            <p>— Publication Log Team</p>
+            <p>This is an automated notification from Publication Log</p>
             <p>© 2024 Publication Log. All rights reserved.</p>
         </div>
     </div>

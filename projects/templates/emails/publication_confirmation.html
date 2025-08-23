@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual PDF Upload Required</title>
+    <title>Publication Upload Confirmation</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,7 +22,7 @@
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -35,17 +35,17 @@
         .content {
             padding: 40px 30px;
         }
-        .alert-box {
-            background-color: #f8d7da;
-            border: 2px solid #dc3545;
+        .success-info {
+            background-color: #f8fff9;
+            border: 2px solid #28a745;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
+            text-align: center;
         }
-        .alert-icon {
+        .success-icon {
             font-size: 48px;
             margin-bottom: 15px;
-            text-align: center;
         }
         .publication-info {
             background-color: #f0f8ff;
@@ -60,28 +60,25 @@
             font-size: 18px;
             margin-bottom: 10px;
         }
-        .issue-list {
+        .publication-details {
+            color: #666;
+            font-size: 14px;
+        }
+        .project-info {
             background-color: #fff3cd;
             border: 1px solid #ffeaa7;
             border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            padding: 15px;
+            margin: 15px 0;
         }
-        .issue-list h3 {
+        .project-title {
+            font-weight: 600;
             color: #856404;
-            margin-top: 0;
-        }
-        .issue-list ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .issue-list li {
             margin-bottom: 5px;
-            color: #856404;
         }
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             padding: 12px 24px;
             text-decoration: none;
@@ -108,57 +105,78 @@
             color: #6c757d;
             font-size: 14px;
         }
+        .timestamp {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .next-steps {
+            background-color: #e8f4fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .next-steps h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>⚠️ Manual PDF Upload Required</h1>
+            <h1>✅ Publication Successfully Uploaded!</h1>
         </div>
         
         <div class="content">
-            <div class="alert-box">
-                <div class="alert-icon">📄</div>
-                <p style="text-align: center; margin: 0; font-weight: 600; color: #721c24;">
-                    PDF Retrieval Failed - Manual Upload Required
-                </p>
+            <div class="success-info">
+                <div class="success-icon">📚</div>
+                <div style="font-weight: 600; color: #28a745; font-size: 18px;">Upload Confirmed</div>
+                <div class="timestamp">Uploaded at {{ timestamp }}</div>
             </div>
             
-            <p>We noticed that you submitted a link for your publication:</p>
+            <p>Dear <strong>{{ author_name }}</strong>,</p>
+            
+            <p>Your publication has been successfully uploaded to our system:</p>
             
             <div class="publication-info">
                 <div class="publication-title">{{ publication_title }}</div>
+                <div class="publication-details">
+                    <strong>Type:</strong> {{ publication_type }}<br>
+                    <strong>Year:</strong> {{ publication_year }}<br>
+                    <strong>Authors:</strong> {{ publication_authors }}<br>
+                    {% if publication_abstract %}
+                    <strong>Abstract:</strong> {{ publication_abstract|truncatewords:30 }}...
+                    {% endif %}
+                </div>
             </div>
             
-            <p>Unfortunately, we were unable to automatically download the PDF from the provided link due to one of the following reasons:</p>
+            <div class="project-info">
+                <div class="project-title">📋 Associated Project</div>
+                <div>{{ project_title }}</div>
+            </div>
             
-            <div class="issue-list">
-                <h3>🔍 Possible Issues:</h3>
+            <div class="next-steps">
+                <h3>What's Next?</h3>
                 <ul>
-                    <li>The PDF is behind a paywall or requires login</li>
-                    <li>The link is not a direct PDF file</li>
-                    <li>Access was denied or the link is broken</li>
-                    <li>The file is hosted on a restricted server</li>
+                    <li>Your publication is now visible to other researchers</li>
+                    <li>You can receive collaboration requests from interested researchers</li>
+                    <li>Track citations and engagement through your dashboard</li>
+                    <li>Update publication details anytime from your profile</li>
                 </ul>
             </div>
             
-            <p>Please upload the publication PDF manually using the link below:</p>
-            
             <div class="action-buttons">
-                <a href="{{ upload_link }}" class="btn">📄 Upload PDF Manually</a>
+                <a href="{{ site_url }}/publications/{{ publication_id }}/" class="btn">👁️ View Publication</a>
             </div>
             
             <p style="color: #6c757d; font-size: 14px;">
-                Thank you for helping us maintain a complete publication archive.
-            </p>
-            
-            <p style="color: #6c757d; font-size: 14px;">
-                If you've already uploaded the PDF manually, feel free to ignore this email.
+                Thank you for contributing to our research community!
             </p>
         </div>
         
         <div class="footer">
-            <p>This is an automated notification from Publication Log</p>
+            <p>This is an automated confirmation from Publication Log</p>
             <p>© 2024 Publication Log. All rights reserved.</p>
         </div>
     </div>

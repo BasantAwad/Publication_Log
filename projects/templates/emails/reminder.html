@@ -1,31 +1,159 @@
-<!-- templates/follow_up_email.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Publication Upload Reminder</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication Upload Reminder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .reminder-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .reminder-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .project-info {
+            background-color: #f0f8ff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .project-title {
+            font-weight: 600;
+            color: #007bff;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .project-details {
+            color: #666;
+            font-size: 14px;
+        }
+        .deadline {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .deadline-text {
+            color: #721c24;
+            font-weight: 600;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-  <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <h2 style="color: #0a497b;">Hello {{ researcher_name }},</h2>
-
-    <p>
-      This is a friendly reminder that your project 
-      <strong>“{{ project_title }}”</strong> is nearing its end date 
-      ({{ project_end_date }}).
-    </p>
-
-    <p>
-      If you have any related publications, please upload them using the secure link below:
-    </p>
-
-    <p style="text-align: center; margin: 30px 0;">
-      <a href="{{ upload_link }}" style="background-color: #0a497b; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Upload Publication</a>
-    </p>
-
-    <p>If you have already uploaded, thank you! No further action is needed.</p>
-
-    <p style="font-size: 13px; color: #777;">This is an automated message from the Publication Log system.</p>
-  </div>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>⏰ Publication Upload Reminder</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello <strong>{{ researcher_name }}</strong>,</p>
+            
+            <div class="reminder-box">
+                <div class="reminder-icon">📚</div>
+                <p style="text-align: center; margin: 0; font-weight: 600; color: #856404;">
+                    This is a friendly reminder that your project is nearing its end date.
+                </p>
+            </div>
+            
+            <div class="project-info">
+                <div class="project-title">{{ project_title }}</div>
+                <div class="project-details">
+                    <strong>End Date:</strong> {{ project_end_date }}<br>
+                    <strong>Status:</strong> Nearing completion
+                </div>
+            </div>
+            
+            <div class="deadline">
+                <div class="deadline-text">⏳ Project ends on {{ project_end_date }}</div>
+            </div>
+            
+            <p>If you have any related publications, please upload them using the secure link below:</p>
+            
+            <div class="action-buttons">
+                <a href="{{ upload_link }}" class="btn">📄 Upload Publication</a>
+            </div>
+            
+            <p style="color: #6c757d; font-size: 14px;">
+                If you have already uploaded your publications, thank you! No further action is needed.
+            </p>
+            
+            <p style="color: #6c757d; font-size: 14px;">
+                You can also access your project dashboard to view all your publications and project details.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated reminder from Publication Log</p>
+            <p>© 2024 Publication Log. All rights reserved.</p>
+        </div>
+    </div>
 </body>
 </html>

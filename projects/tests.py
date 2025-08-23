@@ -2,564 +2,748 @@
 # How to run: python manage.py test -v 2 -s
 # The -s flag ensures print statements are shown.
 
-from django.test import TestCase, Client
-from django.urls import reverse, NoReverseMatch
-from django.contrib.auth.models import User, Group, Permission
-from django.apps import apps
-from django.db import models
-from django.conf import settings
+from django.test import TestCase, Client, override_settings
+from django.urls import reverse
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
+from datetime import date
+import tempfile
+import os
+
+from .models import Project, Publication, Author, UserProfile, MessageRequest, Message, Notification
 
 # ---------------------------
-# Configuration & Utilities
+# Test Configuration
 # ---------------------------
 
-TEST_CONFIG = {
-    # Optional: if your Publication model is in a specific app, set it here (e.g., "publications")
-    "APP_LABEL": "projects",
-    "PUBLICATION_MODEL_NAME": "Publication",
-    # Field discovery hints: we’ll try these names first when building payloads
-    "FIELD_HINTS": {
-        "title": ["title", "name"],
-        "author": ["author", "authors", "creator", "writer"],
-        "year": ["year", "publication_year", "pub_year"],
-        "journal": ["journal", "venue", "conference", "publisher"],
-        "doi": ["doi"],
-        "abstract": ["abstract", "description", "summary"],
-    },
-    # Candidate URL names; the first that resolves will be used
-    "URLS": {
-        "signup": ["signup", "register", "accounts:signup", "account_signup"],
-        "login": ["login", "accounts:login", "account_login"],
-        "logout": ["logout", "accounts:logout", "account_logout"],
-        "dashboard": ["dashboard", "home", "index", "publication_list", "publications:list"],
-        "list": [
-            "publication_list", "publications:list", "pub_list", "publications", "publication-index",
-            "pub:index"
-        ],
-        "create": [
-            "publication_create", "publications:create", "pub_create", "publication-add",
-            "pub:add", "publication_new"
-        ],
-        "update": [
-            "publication_update", "publications:update", "pub_update", "publication-edit",
-            "pub:edit"
-        ],
-        "delete": [
-            "publication_delete", "publications:delete", "pub_delete", "publication-remove",
-            "pub:delete"
-        ],
-        "export_csv": [
-            "publication_export_csv", "publications:export_csv", "export_publications_csv",
-            "export_csv"
-        ],
-        "export_pdf": [
-            "publication_export_pdf", "publications:export_pdf", "export_publications_pdf",
-            "export_pdf"
-        ],
-        "search_param": ["q", "search", "query", "s"],  # GET param candidates
+class TestConfig:
+    """Configuration for test data and URLs"""
+    
+    # Test user credentials
+    TEST_USERNAME = "testuser"
+    TEST_PASSWORD = "TestPass123!"
+    TEST_EMAIL = "test@example.com"
+    
+    # Counter for unique usernames
+    _username_counter = 0
+    
+    @classmethod
+    def get_unique_username(cls):
+        """Generate a unique username for tests"""
+        cls._username_counter += 1
+        return f"testuser_{cls._username_counter}"
+    
+    # Test project data
+    TEST_PROJECT_DATA = {
+        'title': 'Test Research Project',
+        'created': date(2024, 1, 15),
+        'team': 'Test Team Members',
+        'abstract': 'This is a test project abstract for testing purposes.',
+        'duration': '6 months',
+        'domain': 'Computer Science',
+        'scientific_case': 'This project aims to test the publication system.'
     }
-}
-
-
-def reverse_first(candidates, args=None, kwargs=None):
-    """Return the first resolvable URL among candidates, else None."""
-    for name in candidates:
-        try:
-            return reverse(name, args=args, kwargs=kwargs)
-        except NoReverseMatch:
-            continue
-    return None
-
-
-def get_publication_model():
-    """Find the Publication model by name via Django app registry."""
-    ModelName = TEST_CONFIG["PUBLICATION_MODEL_NAME"].lower()
-    if TEST_CONFIG["APP_LABEL"]:
-        for m in apps.get_app_config(TEST_CONFIG["APP_LABEL"]).get_models():
-            if m.__name__.lower() == ModelName:
-                return m
-        return None
-    # Search all apps
-    for m in apps.get_models():
-        if m.__name__.lower() == ModelName:
-            return m
-    return None
-
-
-def discover_field_name(model, logical_key):
-    """Map a logical field key (e.g., 'title') to actual model field name if possible."""
-    hints = TEST_CONFIG["FIELD_HINTS"].get(logical_key, [])
-    model_field_names = {f.name for f in model._meta.get_fields() if getattr(f, "concrete", False)}
-    for h in hints:
-        if h in model_field_names:
-            return h
-    return None
-
-
-def build_publication_payload(model):
-    """Construct a best-effort valid payload for create/update based on discovered fields."""
-    payload = {}
-    title_f = discover_field_name(model, "title")
-    author_f = discover_field_name(model, "author")
-    year_f = discover_field_name(model, "year")
-    journal_f = discover_field_name(model, "journal")
-    doi_f = discover_field_name(model, "doi")
-    abs_f = discover_field_name(model, "abstract")
-
-    if title_f:
-        payload[title_f] = "Deep Learning for X"
-    if author_f:
-        payload[author_f] = "Jane Doe"
-    if year_f:
-        payload[year_f] = 2024
-    if journal_f:
-        payload[journal_f] = "AI Journal"
-    if doi_f:
-        payload[doi_f] = "10.1234/example.doi"
-    if abs_f:
-        payload[abs_f] = "A study on deep learning applications."
-
-    return payload
-
-
-def build_publication_payload_updated(model):
-    """Slightly modified payload for update tests."""
-    payload = build_publication_payload(model)
-    # Update the title if present, else update abstract/author
-    t = discover_field_name(model, "title")
-    if t and t in payload:
-        payload[t] = "Deep Learning for Y (Updated)"
-        return payload
-    a = discover_field_name(model, "author")
-    if a and a in payload:
-        payload[a] = "Jane Doe (Updated)"
-        return payload
-    ab = discover_field_name(model, "abstract")
-    if ab and ab in payload:
-        payload[ab] = "Updated abstract."
-        return payload
-    return payload
-
-
-def get_title_value(obj):
-    """Get a printable title from the Publication instance if possible."""
-    for key in TEST_CONFIG["FIELD_HINTS"]["title"]:
-        if hasattr(obj, key):
-            return getattr(obj, key)
-    return str(obj)
-
-
-def create_min_publication_instance(model):
-    """
-    Try to create a Publication instance directly. If model requires fields we
-    couldn't infer, this may fail. We catch and return (instance or None, error str or None).
-    """
-    payload = build_publication_payload(model)
-    try:
-        instance = model.objects.create(**payload)
-        return (instance, None)
-    except Exception as e:
-        return (None, str(e))
-
+    
+    # Test publication data
+    TEST_PUBLICATION_DATA = {
+        'title': 'Test Publication Title',
+        'year': 2024,
+        'type': 'Journal',
+        'abstract': 'This is a test publication abstract.',
+        'url': 'https://example.com/test-paper.pdf'
+    }
+    
+    # Test author data
+    TEST_AUTHOR_DATA = {
+        'name': 'Test Author',
+        'email': 'author@example.com'
+    }
 
 # ---------------------------
-# Printable TestCase Base
+# Test Utilities
 # ---------------------------
 
-class PrintableTestCase(TestCase):
-    results = []  # class-level list of (suite, test_name, status, note)
+def create_test_user(username=None, password=None, email=None, is_staff=False):
+    """Create a test user with optional parameters"""
+    username = username or TestConfig.get_unique_username()
+    password = password or TestConfig.TEST_PASSWORD
+    email = email or f"{username}@example.com"
+    
+    user = User.objects.create_user(
+        username=username,
+        password=password,
+        email=email
+    )
+    if is_staff:
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+    
+    return user
 
-    @classmethod
-    def add_result(cls, suite, name, status, note=""):
-        cls.results.append((suite, name, status, note))
+def create_test_project(user=None, **kwargs):
+    """Create a test project with optional parameters"""
+    project_data = TestConfig.TEST_PROJECT_DATA.copy()
+    project_data.update(kwargs)
+    
+    project = Project.objects.create(**project_data)
+    return project
 
-    @classmethod
-    def tearDownClass(cls):
-        # Print a suite summary at the end of this class
-        print("\n" + "=" * 72)
-        print(f"TEST CLASS SUMMARY: {cls.__name__}")
-        print("-" * 72)
-        if not cls.results:
-            print("No recorded results.")
-        else:
-            w = max(len(r[1]) for r in cls.results) if cls.results else 20
-            for suite, name, status, note in cls.results:
-                pad = " " * (max(1, w - len(name)))
-                print(f"[{suite}] {name}{pad} -> {status}" + (f" | {note}" if note else ""))
-        print("=" * 72 + "\n")
-        super().tearDownClass()
+def create_test_author(**kwargs):
+    """Create a test author with optional parameters"""
+    author_data = TestConfig.TEST_AUTHOR_DATA.copy()
+    author_data.update(kwargs)
+    
+    author = Author.objects.create(**author_data)
+    return author
 
+def create_test_publication(project, **kwargs):
+    """Create a test publication with optional parameters"""
+    publication_data = TestConfig.TEST_PUBLICATION_DATA.copy()
+    publication_data.update(kwargs)
+    
+    # Handle the author field properly (it's a CharField in the model)
+    if 'author' not in publication_data:
+        publication_data['author'] = 'Test Author'
+    
+    # Remove collaborators from kwargs to avoid direct assignment error
+    collaborators = kwargs.pop('collaborators', None)
+    
+    publication = Publication.objects.create(
+        project=project,
+        **publication_data
+    )
+    
+    # Add collaborators if specified
+    if collaborators:
+        publication.collaborators.set(collaborators)
+    
+    return publication
+
+def create_test_file():
+    """Create a temporary test file for uploads"""
+    return SimpleUploadedFile(
+        "test_paper.pdf",
+        b"Test PDF content",
+        content_type="application/pdf"
+    )
 
 # ---------------------------
-# Unit Tests
+# Base Test Case
 # ---------------------------
 
-class UnitTests(PrintableTestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.Publication = get_publication_model()
+@override_settings(SIGNALS_ENABLED=False)
+class PublicationLogTestCase(TestCase):
+    """Base test case with common setup and utilities"""
+    
+    def setUp(self):
+        """Set up test data for each test"""
+        self.client = Client()
+        self.user = create_test_user()
+        self.project = create_test_project()
+        self.author = create_test_author()
+    
+    def login_user(self, user=None):
+        """Helper to login a user"""
+        user = user or self.user
+        return self.client.login(username=user.username, password=TestConfig.TEST_PASSWORD)
 
-    def test_publication_str(self):
-        name = "UT-01 Publication __str__"
-        success = False
-        note = ""
-        try:
-            if not self.Publication:
-                self.skipTest("Publication model not found.")
-            # Try to create minimal instance
-            inst, err = create_min_publication_instance(self.Publication)
-            if not inst:
-                self.skipTest(f"Could not create Publication instance: {err}")
-            s = str(inst)
-            title_f = discover_field_name(self.Publication, "title")
-            expected = getattr(inst, title_f) if title_f else None
-            if expected:
-                self.assertIn(expected, s)
-            else:
-                # At least ensure __str__ returns non-empty
-                self.assertTrue(len(s) > 0)
-            success = True
-        finally:
-            self.add_result("UNIT", name, "PASS" if success else "FAIL", note)
+# ---------------------------
+# Model Tests
+# ---------------------------
 
-    def test_model_create_minimum_valid(self):
-        name = "UT-02 Model create minimum valid record"
-        success = False
-        note = ""
-        try:
-            if not self.Publication:
-                self.skipTest("Publication model not found.")
-            inst, err = create_min_publication_instance(self.Publication)
-            self.assertIsNotNone(inst, msg=f"Create failed: {err}")
-            success = True
-        finally:
-            self.add_result("UNIT", name, "PASS" if success else "FAIL", note)
+class ModelTests(PublicationLogTestCase):
+    """Test model functionality and relationships"""
+    
+    def test_project_creation(self):
+        """Test creating a project with all required fields"""
+        project = create_test_project(
+            title="AI Research Project",
+            domain="Artificial Intelligence"
+        )
+        
+        self.assertEqual(project.title, "AI Research Project")
+        self.assertEqual(project.domain, "Artificial Intelligence")
+        self.assertEqual(str(project), project.title)
+    
+    def test_publication_creation(self):
+        """Test creating a publication with project relationship"""
+        publication = create_test_publication(
+            self.project,
+            title="Machine Learning Paper",
+            type="Conference"
+        )
+        
+        self.assertEqual(publication.title, "Machine Learning Paper")
+        self.assertEqual(publication.project, self.project)
+        self.assertEqual(publication.type, "Conference")
+        self.assertEqual(str(publication), publication.title)
+    
+    def test_author_creation(self):
+        """Test creating an author"""
+        author = create_test_author(
+            name="Dr. Jane Smith",
+            email="jane.smith@university.edu"
+        )
+        
+        self.assertEqual(author.name, "Dr. Jane Smith")
+        self.assertEqual(author.email, "jane.smith@university.edu")
+        self.assertEqual(str(author), author.name)
+    
+    def test_publication_with_collaborators(self):
+        """Test publication with multiple collaborators"""
+        author1 = create_test_author(name="Author One")
+        author2 = create_test_author(name="Author Two")
+        
+        publication = create_test_publication(
+            self.project,
+            collaborators=[author1, author2]
+        )
+        
+        self.assertEqual(publication.collaborators.count(), 2)
+        self.assertIn(author1, publication.collaborators.all())
+        self.assertIn(author2, publication.collaborators.all())
+    
+    def test_user_profile_creation(self):
+        """Test user profile creation and avatar handling"""
+        profile = UserProfile.objects.create(user=self.user)
+        
+        self.assertEqual(profile.user, self.user)
+        self.assertFalse(profile.is_online)
+        self.assertIsNotNone(profile.get_avatar_url())
 
-    def test_auth_create_and_login(self):
-        name = "UT-03 Auth create & login"
-        success = False
-        note = ""
-        try:
-            client = Client()
-            user = User.objects.create_user(username="unittest_user", password="Pass12345!")
-            logged = client.login(username="unittest_user", password="Pass12345!")
-            self.assertTrue(logged)
-            success = True
-        finally:
-            self.add_result("UNIT", name, "PASS" if success else "FAIL", note)
+# ---------------------------
+# View Tests
+# ---------------------------
 
+class ViewTests(PublicationLogTestCase):
+    """Test view functionality and responses"""
+    
+    def test_projects_list_view(self):
+        """Test the projects list page"""
+        response = self.client.get(reverse('projects_page'))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'projects/projects_page.html')
+        self.assertIn('projects', response.context)
+    
+    def test_project_detail_view(self):
+        """Test the project detail page"""
+        response = self.client.get(reverse('project_detail', args=[self.project.pk]))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'projects/project_detail.html')
+        self.assertEqual(response.context['project'], self.project)
+    
+    def test_publication_list_view(self):
+        """Test the publication list page"""
+        response = self.client.get(reverse('publication_list'))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'publications/publication_list.html')
+        self.assertIn('publications', response.context)
+    
+    def test_publication_detail_view(self):
+        """Test the publication detail page"""
+        publication = create_test_publication(self.project)
+        response = self.client.get(reverse('publication_detail', args=[publication.pk]))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'publications/publication_detail.html')
+        self.assertEqual(response.context['publication'], publication)
+    
+    def test_add_publication_view_requires_login(self):
+        """Test that adding publication requires login"""
+        response = self.client.get(reverse('add_publication', args=[self.project.pk]))
+        
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
+    
+    def test_add_publication_view_with_login(self):
+        """Test adding publication when logged in"""
+        self.login_user()
+        
+        response = self.client.get(reverse('add_publication', args=[self.project.pk]))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'publications/add_publication.html')
+        self.assertIn('form', response.context)
+    
+    def test_add_publication_post_valid(self):
+        """Test posting valid publication data"""
+        self.login_user()
+        
+        test_file = create_test_file()
+        
+        data = {
+            'title': 'New Test Publication',
+            'year': 2024,
+            'type': 'Journal',
+            'abstract': 'Test abstract',
+            'url': 'https://example.com/paper.pdf',
+            'new_collaborators': 'Author One, Author Two'
+        }
+        
+        files = {'file': test_file}
+        
+        response = self.client.post(
+            reverse('add_publication', args=[self.project.pk]),
+            data,
+            files=files,
+            follow=True
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # Check if publication was created
+        publication = Publication.objects.filter(title='New Test Publication').first()
+        self.assertIsNotNone(publication)
+        self.assertEqual(publication.project, self.project)
+    
+    def test_user_dashboard_requires_login(self):
+        """Test that user dashboard requires login"""
+        response = self.client.get(reverse('user_dashboard'))
+        
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
+    
+    def test_user_dashboard_with_login(self):
+        """Test user dashboard when logged in"""
+        self.login_user()
+        
+        response = self.client.get(reverse('user_dashboard'))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/user_dashboard.html')
+        self.assertIn('publications', response.context)
+
+# ---------------------------
+# Authentication Tests
+# ---------------------------
+
+class AuthenticationTests(PublicationLogTestCase):
+    """Test authentication functionality"""
+    
+    def test_signup_view(self):
+        """Test user registration"""
+        data = {
+            'username': 'newuser',
+            'email': 'newuser@example.com',
+            'password1': 'NewPass123!',
+            'password2': 'NewPass123!'
+        }
+        
+        response = self.client.post(reverse('signup'), data, follow=True)
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # Check if user was created
+        user = User.objects.filter(username='newuser').first()
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, 'newuser@example.com')
+    
+    def test_login_view(self):
+        """Test user login"""
+        data = {
+            'username': self.user.username,
+            'password': TestConfig.TEST_PASSWORD
+        }
+        
+        response = self.client.post(reverse('login'), data, follow=True)
+        
+        self.assertEqual(response.status_code, 200)
+    
+    def test_logout_view(self):
+        """Test user logout"""
+        self.login_user()
+        
+        response = self.client.get(reverse('logout'), follow=True)
+        
+        self.assertEqual(response.status_code, 200)
+
+# ---------------------------
+# Search and Filter Tests
+# ---------------------------
+
+class SearchFilterTests(PublicationLogTestCase):
+    """Test search and filtering functionality"""
+    
+    def setUp(self):
+        super().setUp()
+        
+        # Create multiple projects and publications for testing
+        self.project2 = create_test_project(
+            title="Data Science Project",
+            domain="Data Science"
+        )
+        
+        self.publication1 = create_test_publication(
+            self.project,
+            title="AI Research Paper",
+            type="Journal"
+        )
+        
+        self.publication2 = create_test_publication(
+            self.project2,
+            title="Data Analysis Study",
+            type="Conference"
+        )
+    
+    def test_project_search(self):
+        """Test searching projects by title"""
+        response = self.client.get(reverse('projects_page'), {'search': 'AI Research'})
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('projects', response.context)
+        
+        # Should find the AI project
+        projects = response.context['projects']
+        self.assertTrue(any('AI Research' in project.title for project in projects))
+    
+    def test_project_domain_filter(self):
+        """Test filtering projects by domain"""
+        response = self.client.get(reverse('projects_page'), {'domain': 'Computer Science'})
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('projects', response.context)
+        
+        # Should only show Computer Science projects
+        projects = response.context['projects']
+        self.assertTrue(all(project.domain == 'Computer Science' for project in projects))
+    
+    def test_publication_search(self):
+        """Test searching publications by title"""
+        response = self.client.get(reverse('publication_list'), {'search': 'AI Research'})
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('publications', response.context)
+        
+        # Should find the AI publication
+        publications = response.context['publications']
+        self.assertTrue(any('AI Research' in pub.title for pub in publications))
+    
+    def test_publication_type_filter(self):
+        """Test filtering publications by type"""
+        response = self.client.get(reverse('publication_list'), {'type': 'Journal'})
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('publications', response.context)
+        
+        # Should only show Journal publications
+        publications = response.context['publications']
+        self.assertTrue(all(pub.type == 'Journal' for pub in publications))
+    
+    def test_publication_year_filter(self):
+        """Test filtering publications by year"""
+        response = self.client.get(reverse('publication_list'), {'year': '2024'})
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('publications', response.context)
+        
+        # Should only show 2024 publications
+        publications = response.context['publications']
+        self.assertTrue(all(pub.year == 2024 for pub in publications))
+
+# ---------------------------
+# Form Tests
+# ---------------------------
+
+class FormTests(PublicationLogTestCase):
+    """Test form validation and functionality"""
+    
+    def test_publication_form_valid(self):
+        """Test valid publication form data"""
+        from .forms import PublicationForm
+        
+        test_file = create_test_file()
+        
+        data = {
+            'title': 'Test Publication',
+            'year': 2024,
+            'type': 'Journal',
+            'abstract': 'Test abstract',
+            'url': 'https://example.com/paper.pdf',
+            'new_collaborators': 'Author One, Author Two'
+        }
+        
+        files = {'file': test_file}
+        
+        form = PublicationForm(data, files, project=self.project)
+        
+        self.assertTrue(form.is_valid())
+    
+    def test_publication_form_invalid_no_file_or_url(self):
+        """Test publication form validation when neither file nor URL is provided"""
+        from .forms import PublicationForm
+        
+        data = {
+            'title': 'Test Publication',
+            'year': 2024,
+            'type': 'Journal',
+            'abstract': 'Test abstract',
+            'new_collaborators': 'Author One'
+        }
+        
+        form = PublicationForm(data, project=self.project)
+        
+        self.assertFalse(form.is_valid())
+        self.assertIn('Please upload a file or provide a download link', str(form.errors))
+    
+    def test_user_creation_form_valid(self):
+        """Test valid user creation form data"""
+        from .forms import UserCreation
+        
+        data = {
+            'username': 'newuser',
+            'email': 'newuser@example.com',
+            'password1': 'NewPass123!',
+            'password2': 'NewPass123!'
+        }
+        
+        form = UserCreation(data)
+        
+        self.assertTrue(form.is_valid())
+    
+    def test_user_creation_form_duplicate_email(self):
+        """Test user creation form with duplicate email"""
+        from .forms import UserCreation
+        
+        # Create a user with the email first
+        create_test_user(email='existing@example.com')
+        
+        data = {
+            'username': 'newuser',
+            'email': 'existing@example.com',
+            'password1': 'NewPass123!',
+            'password2': 'NewPass123!'
+        }
+        
+        form = UserCreation(data)
+        
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
 
 # ---------------------------
 # Integration Tests
 # ---------------------------
 
-class IntegrationTests(PrintableTestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.client = Client()
-        cls.Publication = get_publication_model()
-        cls.user = User.objects.create_user(username="it_user", password="Pass12345!")
-        cls.client.login(username="it_user", password="Pass12345!")
-        # Resolve URLs (or leave as None if not found)
-        urls = TEST_CONFIG["URLS"]
-        cls.url_list = reverse_first(urls["list"])
-        cls.url_create = reverse_first(urls["create"])
-        cls.url_export_csv = reverse_first(urls["export_csv"])
-        cls.url_export_pdf = reverse_first(urls["export_pdf"])
-        # Create seed object if possible (for update/delete)
-        cls.seed = None
-        if cls.Publication:
-            cls.seed, _ = create_min_publication_instance(cls.Publication)
-            # Update/delete URLs require ID
-            cls.url_update = None
-            cls.url_delete = None
-            if cls.seed:
-                cls.url_update = reverse_first(urls["update"], args=[cls.seed.pk])
-                cls.url_delete = reverse_first(urls["delete"], args=[cls.seed.pk])
-        else:
-            cls.url_update = None
-            cls.url_delete = None
-
-    def test_create_publication_post(self):
-        name = "IT-01 Create Publication (POST)"
-        success = False
-        note = ""
-        try:
-            if not self.url_create:
-                self.skipTest("Create URL not found.")
-            if not self.Publication:
-                self.skipTest("Publication model not found.")
-            payload = build_publication_payload(self.Publication)
-            resp = self.client.post(self.url_create, payload, follow=True)
-            self.assertIn(resp.status_code, [200, 302])
-            # Verify created via DB
-            title_f = discover_field_name(self.Publication, "title")
-            qs = self.Publication.objects.all()
-            self.assertTrue(qs.exists(), "No publications found after create.")
-            if title_f:
-                self.assertTrue(qs.filter(**{title_f: payload.get(title_f)}).exists())
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
-    def test_edit_publication_post(self):
-        name = "IT-02 Edit Publication (POST)"
-        success = False
-        note = ""
-        try:
-            if not self.url_update:
-                self.skipTest("Update URL not found or no seed object.")
-            if not self.Publication:
-                self.skipTest("Publication model not found.")
-            payload = build_publication_payload_updated(self.Publication)
-            resp = self.client.post(self.url_update, payload, follow=True)
-            self.assertIn(resp.status_code, [200, 302])
-            # Refresh and compare at least one changed field
-            obj = self.Publication.objects.get(pk=self.seed.pk)
-            tfield = discover_field_name(self.Publication, "title")
-            afield = discover_field_name(self.Publication, "author")
-            if tfield and tfield in payload:
-                self.assertEqual(getattr(obj, tfield), payload[tfield])
-            elif afield and afield in payload:
-                self.assertEqual(getattr(obj, afield), payload[afield])
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
-    def test_delete_publication_post(self):
-        name = "IT-03 Delete Publication (POST)"
-        success = False
-        note = ""
-        try:
-            if not self.url_delete:
-                self.skipTest("Delete URL not found or no seed object.")
-            resp = self.client.post(self.url_delete, follow=True)
-            self.assertIn(resp.status_code, [200, 302])
-            # Ensure deleted
-            if self.Publication and self.seed:
-                self.assertFalse(self.Publication.objects.filter(pk=self.seed.pk).exists())
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
-    def test_list_publications_get(self):
-        name = "IT-04 List Publications (GET)"
-        success = False
-        note = ""
-        try:
-            if not self.url_list:
-                self.skipTest("List URL not found.")
-            resp = self.client.get(self.url_list)
-            self.assertEqual(resp.status_code, 200)
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
-    def test_search_filter_get(self):
-        name = "IT-05 Search/Filter (GET)"
-        success = False
-        note = ""
-        try:
-            if not self.url_list:
-                self.skipTest("List URL not found.")
-            # Create two with distinct titles if possible
-            if self.Publication:
-                tfield = discover_field_name(self.Publication, "title")
-                if tfield:
-                    a, _ = create_min_publication_instance(self.Publication)
-                    b, _ = create_min_publication_instance(self.Publication)
-                    if a and b:
-                        setattr(a, tfield, "Graph Networks for Science")
-                        a.save()
-                        setattr(b, tfield, "Deep Learning for X")
-                        b.save()
-                        param_name = TEST_CONFIG["URLS"]["search_param"][0]
-                        resp = self.client.get(self.url_list, {param_name: "Graph"})
-                        self.assertEqual(resp.status_code, 200)
-                        # Weak assertion: page contains at least one keyword
-                        self.assertIn(b"Graph", resp.content)
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
-    def test_export_csv_get(self):
-        name = "IT-06 Export CSV (GET)"
-        success = False
-        note = ""
-        try:
-            if not self.url_export_csv:
-                self.skipTest("CSV export URL not found.")
-            resp = self.client.get(self.url_export_csv)
-            self.assertEqual(resp.status_code, 200)
-            ctype = resp.headers.get("Content-Type") or resp.get("Content-Type", "")
-            self.assertIn("text/csv", ctype)
-            self.assertTrue(len(resp.content) > 0)
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
-    def test_export_pdf_get(self):
-        name = "IT-07 Export PDF (GET)"
-        success = False
-        note = ""
-        try:
-            if not self.url_export_pdf:
-                self.skipTest("PDF export URL not found (feature may be disabled).")
-            resp = self.client.get(self.url_export_pdf)
-            self.assertEqual(resp.status_code, 200)
-            ctype = resp.headers.get("Content-Type") or resp.get("Content-Type", "")
-            self.assertIn("application/pdf", ctype)
-            self.assertTrue(len(resp.content) > 0)
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
-    def test_permissions_anonymous_redirect(self):
-        name = "IT-08 Permissions: anonymous redirected"
-        success = False
-        note = ""
-        try:
-            # Log out
-            self.client.logout()
-            # Try create as anon if URL exists
-            if not self.url_create:
-                self.skipTest("Create URL not found.")
-            resp = self.client.get(self.url_create)
-            # Expect redirect to login
-            self.assertIn(resp.status_code, [301, 302])
-            success = True
-        finally:
-            self.add_result("INTEG", name, "PASS" if success else "FAIL", note)
-
+class IntegrationTests(PublicationLogTestCase):
+    """Test complete workflows and integrations"""
+    
+    def test_complete_publication_workflow(self):
+        """Test the complete workflow from project creation to publication"""
+        # 1. Create a project
+        project = create_test_project(
+            title="Integration Test Project",
+            domain="Integration Testing"
+        )
+        
+        # 2. Create an author
+        author = create_test_author(
+            name="Integration Test Author",
+            email="integration@test.com"
+        )
+        
+        # 3. Login and add publication
+        self.login_user()
+        
+        test_file = create_test_file()
+        
+        data = {
+            'title': 'Integration Test Publication',
+            'year': 2024,
+            'type': 'Journal',
+            'abstract': 'Integration test abstract',
+            'url': 'https://example.com/integration.pdf',
+            'new_collaborators': 'Integration Test Author'
+        }
+        
+        files = {'file': test_file}
+        
+        response = self.client.post(
+            reverse('add_publication', args=[project.pk]),
+            data,
+            files=files,
+            follow=True
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # 4. Verify publication was created with correct relationships
+        publication = Publication.objects.filter(title='Integration Test Publication').first()
+        self.assertIsNotNone(publication)
+        self.assertEqual(publication.project, project)
+        self.assertEqual(publication.collaborators.count(), 1)
+        self.assertEqual(publication.collaborators.first().name, 'Integration Test Author')
+        
+        # 5. Verify it appears in publication list
+        response = self.client.get(reverse('publication_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(publication, response.context['publications'])
+        
+        # 6. Verify it appears in project detail
+        response = self.client.get(reverse('project_detail', args=[project.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(publication, response.context['publications'])
+    
+    def test_user_registration_and_dashboard_access(self):
+        """Test user registration and subsequent dashboard access"""
+        # 1. Register new user
+        username = TestConfig.get_unique_username()
+        data = {
+            'username': username,
+            'email': f'{username}@example.com',
+            'password1': 'DashboardPass123!',
+            'password2': 'DashboardPass123!'
+        }
+        
+        response = self.client.post(reverse('signup'), data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        
+        # 2. Login
+        login_data = {
+            'username': username,
+            'password': 'DashboardPass123!'
+        }
+        
+        response = self.client.post(reverse('login'), login_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        
+        # 3. Access dashboard
+        response = self.client.get(reverse('user_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/user_dashboard.html')
 
 # ---------------------------
-# System (End-to-End) Tests
+# Edge Case Tests
 # ---------------------------
 
-class SystemTests(PrintableTestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.client = Client()
-        cls.Publication = get_publication_model()
-        urls = TEST_CONFIG["URLS"]
-        cls.url_signup = reverse_first(urls["signup"])
-        cls.url_login = reverse_first(urls["login"])
-        cls.url_list = reverse_first(urls["list"])
-        cls.url_create = reverse_first(urls["create"])
-        cls.url_export_csv = reverse_first(urls["export_csv"])
+class EdgeCaseTests(PublicationLogTestCase):
+    """Test edge cases and error conditions"""
+    
+    def test_publication_without_project(self):
+        """Test that publication requires a project"""
+        with self.assertRaises(Exception):
+            Publication.objects.create(
+                title="Test Publication",
+                year=2024,
+                type="Journal",
+                author="Test Author"
+            )
+    
+    def test_author_without_name(self):
+        """Test author creation with null name (should be allowed based on model)"""
+        author = Author.objects.create(
+            name=None,
+            email="test@example.com"
+        )
+        
+        self.assertIsNone(author.name)
+        self.assertEqual(author.email, "test@example.com")
+    
+    def test_duplicate_author_name(self):
+        """Test that author names must be unique"""
+        author1 = create_test_author(name="Unique Author")
+        
+        # This should fail due to unique constraint
+        with self.assertRaises(Exception):
+            Author.objects.create(
+                name="Unique Author",
+                email="different@example.com"
+            )
+    
+    def test_publication_validation_without_file_or_url(self):
+        """Test publication model validation"""
+        publication = Publication(
+            project=self.project,
+            title="Test Publication",
+            year=2024,
+            type="Journal",
+            author="Test Author"
+        )
+        
+        # Should raise validation error
+        with self.assertRaises(Exception):
+            publication.full_clean()
+    
+    def test_large_file_upload(self):
+        """Test handling of large file uploads"""
+        self.login_user()
+        
+        # Create a large file (simulated)
+        large_file = SimpleUploadedFile(
+            "large_paper.pdf",
+            b"x" * 1024 * 1024,  # 1MB file
+            content_type="application/pdf"
+        )
+        
+        data = {
+            'title': 'Large File Test',
+            'year': 2024,
+            'type': 'Journal',
+            'abstract': 'Test with large file',
+            'new_collaborators': 'Test Author'
+        }
+        
+        files = {'file': large_file}
+        
+        response = self.client.post(
+            reverse('add_publication', args=[self.project.pk]),
+            data,
+            files=files,
+            follow=True
+        )
+        
+        # Should handle large files gracefully
+        self.assertEqual(response.status_code, 200)
 
-    def test_full_flow_signup_login_create_list_export(self):
-        name = "ST-01 Full flow: Sign up → Login → Create → List → Export CSV"
-        success = False
-        note = ""
-        try:
-            username = "system_user"
-            password = "Pass12345!"
-            email = "system_user@example.com"
+# ---------------------------
+# Performance Tests
+# ---------------------------
 
-            # 1) Sign up: if no signup URL, fallback to direct user creation
-            if self.url_signup:
-                resp = self.client.post(self.url_signup, {
-                    "username": username,
-                    "password1": password,
-                    "password2": password,
-                    "email": email
-                }, follow=True)
-                self.assertIn(resp.status_code, [200, 302])
-            else:
-                User.objects.create_user(username=username, password=password, email=email)
+class PerformanceTests(PublicationLogTestCase):
+    """Test performance with larger datasets"""
+    
+    def test_multiple_publications_performance(self):
+        """Test performance with many publications"""
+        # Create many publications
+        publications = []
+        for i in range(50):
+            publication = create_test_publication(
+                self.project,
+                title=f"Publication {i}",
+                year=2024
+            )
+            publications.append(publication)
+        
+        # Test publication list performance
+        response = self.client.get(reverse('publication_list'))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['publications']), 50)
+    
+    def test_search_performance(self):
+        """Test search performance with many records"""
+        # Create many publications with searchable titles
+        for i in range(100):
+            create_test_publication(
+                self.project,
+                title=f"Research Paper {i}",
+                year=2024
+            )
+        
+        # Test search performance
+        response = self.client.get(reverse('publication_list'), {'search': 'Research'})
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertGreater(len(response.context['publications']), 0)
 
-            # 2) Login
-            logged = self.client.login(username=username, password=password)
-            if not logged and self.url_login:
-                # Try posting to login view if needed
-                resp = self.client.post(self.url_login, {"username": username, "password": password}, follow=True)
-                self.assertIn(resp.status_code, [200, 302])
-                # Try client session again
-                logged = self.client.login(username=username, password=password)
-            self.assertTrue(logged, "Login failed for system user.")
+# ---------------------------
+# Cleanup
+# ---------------------------
 
-            # 3) Create publication
-            if not self.url_create:
-                self.skipTest("Create URL not found.")
-            if not self.Publication:
-                self.skipTest("Publication model not found.")
-            payload = build_publication_payload(self.Publication)
-            resp = self.client.post(self.url_create, payload, follow=True)
-            self.assertIn(resp.status_code, [200, 302])
-
-            # 4) List & check presence
-            if self.url_list:
-                resp = self.client.get(self.url_list)
-                self.assertEqual(resp.status_code, 200)
-                # Ensure title appears in list page content (if rendered)
-                tfield = discover_field_name(self.Publication, "title")
-                if tfield and payload.get(tfield):
-                    self.assertIn(payload[tfield].encode(), resp.content)
-
-            # 5) Export CSV
-            if self.url_export_csv:
-                resp = self.client.get(self.url_export_csv)
-                self.assertEqual(resp.status_code, 200)
-                ctype = resp.headers.get("Content-Type") or resp.get("Content-Type", "")
-                self.assertIn("text/csv", ctype)
-                self.assertTrue(len(resp.content) > 0)
-
-            success = True
-        finally:
-            self.add_result("SYSTEM", name, "PASS" if success else "FAIL", note)
-
-    def test_negative_invalid_form_submit(self):
-        name = "ST-02 Negative flow: Invalid create submission"
-        success = False
-        note = ""
-        try:
-            # Ensure logged in
-            user = User.objects.create_user(username="neg_user", password="Pass12345!")
-            self.client.login(username="neg_user", password="Pass12345!")
-            if not self.url_create:
-                self.skipTest("Create URL not found.")
-            if not self.Publication:
-                self.skipTest("Publication model not found.")
-            # Build payload and then remove the most-likely required field (title)
-            payload = build_publication_payload(self.Publication)
-            tfield = discover_field_name(self.Publication, "title")
-            if tfield and tfield in payload:
-                payload.pop(tfield)
-            resp = self.client.post(self.url_create, payload)
-            # Expect form re-render (200) or validation feedback
-            self.assertEqual(resp.status_code, 200)
-            success = True
-        finally:
-            self.add_result("SYSTEM", name, "PASS" if success else "FAIL", note)
-
-    def test_role_based_restriction(self):
-        name = "ST-03 Role-based restriction"
-        success = False
-        note = ""
-        try:
-            # This is a generic check: try to access create as a normal user (should be allowed),
-            # and simulate an admin-only endpoint if such exists (skip if not).
-            # If your app enforces role-based permissions on create/edit/delete, this test will catch it.
-            normal = User.objects.create_user(username="user_role", password="Pass12345!")
-            self.client.login(username="user_role", password="Pass12345!")
-            # Access create (most systems allow authenticated users)
-            if self.url_create:
-                resp = self.client.get(self.url_create)
-                self.assertIn(resp.status_code, [200, 302])
-
-            # Now simulate admin by assigning superuser
-            admin = User.objects.create_user(username="admin_role", password="AdminPass123!")
-            admin.is_superuser = True
-            admin.is_staff = True
-            admin.save()
-            self.client.logout()
-            self.client.login(username="admin_role", password="AdminPass123!")
-            # Try list as admin (should work)
-            if self.url_list:
-                resp = self.client.get(self.url_list)
-                self.assertEqual(resp.status_code, 200)
-
-            success = True
-        finally:
-            self.add_result("SYSTEM", name, "PASS" if success else "FAIL", note)
+def tearDownModule():
+    """Clean up any temporary files created during testing"""
+    # This will be called after all tests in this module
+    pass

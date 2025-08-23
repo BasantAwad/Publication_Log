@@ -10,11 +10,22 @@ from django.contrib.auth.models import User
 
 # Form for creating or editing a Publication instance
 class PublicationForm(forms.ModelForm):
+    # Primary author field
+    primary_author_name = forms.CharField(
+        required=True,
+        label="Primary Author",
+        help_text="Enter the primary author's name."
+    )
+    primary_author_email = forms.EmailField(
+        required=True,
+        label="Primary Author Email",
+        help_text="Enter the primary author's email address."
+    )
     # Additional field to capture new collaborators (authors) as a comma-separated string
     new_collaborators = forms.CharField(
         required=False,
-        label="Authors",
-        help_text="Enter comma-separated author names."
+        label="Additional Authors",
+        help_text="Enter comma-separated additional author names (optional)."
     )
     
     def __init__(self, *args, project=None, **kwargs):
@@ -26,7 +37,7 @@ class PublicationForm(forms.ModelForm):
         # Specify the model this form is tied to
         model = Publication
         # List the fields to be included in the form
-        fields = ['title', 'abstract', 'file', 'url' , 'year']
+        fields = ['title', 'abstract', 'file', 'url', 'year', 'type']
 
     def clean(self):
         # Custom validation logic for the form
@@ -40,25 +51,40 @@ class PublicationForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
-        # Custom save logic to also handle collaborators
+        # Custom save logic to also handle authors
         instance = super().save(commit=False)
         
         if commit:
+            # Handle primary author
+            primary_author_name = self.cleaned_data.get("primary_author_name", "")
+            primary_author_email = self.cleaned_data.get("primary_author_email", "")
+            
+            if primary_author_name and primary_author_email:
+                primary_author, _ = Author.objects.get_or_create(
+                    name=primary_author_name,
+                    defaults={'email': primary_author_email}
+                )
+                instance.primary_author = primary_author
+            
             instance.save()  # Save the publication instance
             self.save_m2m()  # Save many-to-many relationships
 
-            # Parse authors from the new_collaborators field
+            # Parse additional authors from the new_collaborators field
             author_names = self.cleaned_data.get("new_collaborators", "")
-            author_names = [name.strip() for name in author_names.split(",") if name.strip()]
-            authors = []
+            if author_names:
+                author_names = [name.strip() for name in author_names.split(",") if name.strip()]
+                authors = []
 
-            for name in author_names:
-                # Get or create each author by name
-                author, _ = Author.objects.get_or_create(name=name)
-                authors.append(author)
+                for name in author_names:
+                    # Get or create each author by name (with default email)
+                    author, _ = Author.objects.get_or_create(
+                        name=name,
+                        defaults={'email': f"{name.lower().replace(' ', '.')}@example.com"}
+                    )
+                    authors.append(author)
 
-            # Set the collaborators field (ManyToMany relationship)
-            instance.collaborators.set(authors)
+                # Set the collaborators field (ManyToMany relationship)
+                instance.collaborators.set(authors)
 
         return instance
 

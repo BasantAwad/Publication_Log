@@ -1,0 +1,726 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ group.name }} - Group Chat{% endblock %}
+
+{% block extra_css %}
+<style>
+    .group-chat-container {
+        height: calc(100vh - 100px);
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-sidebar {
+        width: 300px;
+        background: white;
+        border-right: 1px solid #e9ecef;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .group-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .group-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .group-meta {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .group-description {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        opacity: 0.8;
+        line-height: 1.4;
+    }
+
+    .members-section {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .section-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .member-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        transition: background 0.3s ease;
+    }
+
+    .member-item:hover {
+        background: #f8f9fa;
+    }
+
+    .member-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #6c757d;
+        margin-right: 12px;
+        position: relative;
+    }
+
+    .online-indicator {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        background: #28a745;
+        border: 2px solid white;
+        border-radius: 50%;
+    }
+
+    .offline-indicator {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        background: #6c757d;
+        border: 2px solid white;
+        border-radius: 50%;
+    }
+
+    .member-info {
+        flex: 1;
+    }
+
+    .member-name {
+        font-weight: 600;
+        color: #212529;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
+
+    .member-status {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .member-role {
+        background: #007bff;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        background: white;
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .chat-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .action-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    .messages-container {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+
+    .message {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .message.own-message {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #6c757d;
+        margin: 0 12px;
+        flex-shrink: 0;
+    }
+
+    .message-content {
+        max-width: 60%;
+        background: white;
+        padding: 12px 16px;
+        border-radius: 18px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .message.own-message .message-content {
+        background: #007bff;
+        color: white;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .message-sender {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+
+    .message.own-message .message-sender {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .message.own-message .message-time {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .message-text {
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+
+    .message-status {
+        font-size: 0.7rem;
+        color: #6c757d;
+        margin-top: 5px;
+        text-align: right;
+    }
+
+    .message.own-message .message-status {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .typing-indicator {
+        padding: 10px 20px;
+        color: #6c757d;
+        font-style: italic;
+        font-size: 0.9rem;
+    }
+
+    .chat-input-container {
+        background: white;
+        padding: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .chat-input-form {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+    }
+
+    .message-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        resize: none;
+        min-height: 45px;
+        max-height: 120px;
+        transition: border-color 0.3s ease;
+    }
+
+    .message-input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 13, 255, 0.1);
+    }
+
+    .send-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+
+    .send-btn:hover {
+        background: #0056b3;
+        transform: scale(1.05);
+    }
+
+    .send-btn:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .no-messages {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .no-messages-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .no-messages h3 {
+        margin-bottom: 10px;
+        color: #495057;
+    }
+
+    .no-messages p {
+        font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .group-chat-container {
+            flex-direction: column;
+            height: calc(100vh - 80px);
+        }
+
+        .chat-sidebar {
+            width: 100%;
+            height: 200px;
+            border-right: none;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .members-section {
+            padding: 15px;
+        }
+
+        .message-content {
+            max-width: 80%;
+        }
+
+        .chat-actions {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="group-chat-container">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+        <div class="group-header">
+            <div class="group-title">{{ group.name }}</div>
+            <div class="group-meta">{{ group.members.count }} members</div>
+            {% if group.description %}
+            <div class="group-description">{{ group.description }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="members-section">
+            <div class="section-title">Members</div>
+            {% for member in group.members.all %}
+            <div class="member-item">
+                <div class="member-avatar">
+                    {% if member.author.profile_picture %}
+                        <img src="{{ member.author.profile_picture.url }}" alt="{{ member.author.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                        {{ member.author.name|first|upper }}
+                    {% endif %}
+                    <div class="{% if member.userprofile.is_online %}online-indicator{% else %}offline-indicator{% endif %}"></div>
+                </div>
+                <div class="member-info">
+                    <div class="member-name">{{ member.author.name }}</div>
+                    <div class="member-status">
+                        {% if member.userprofile.is_online %}
+                            Online
+                        {% else %}
+                            Offline
+                        {% endif %}
+                    </div>
+                </div>
+                {% if member == group.created_by %}
+                <div class="member-role">Owner</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+        <div class="chat-header">
+            <div class="chat-title">{{ group.name }}</div>
+            <div class="chat-actions">
+                {% if group.created_by == user %}
+                <a href="{% url 'invite_to_group' group.id %}" class="action-btn btn-secondary">👥 Invite</a>
+                {% endif %}
+                <a href="{% url 'group_messaging_home' %}" class="action-btn btn-secondary">← Back</a>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messages-container">
+            {% if group_messages %}
+                {% for message in group_messages %}
+                <div class="message {% if message.sender == user %}own-message{% endif %}">
+                    <div class="message-avatar">
+                        {% if message.sender.author.profile_picture %}
+                            <img src="{{ message.sender.author.profile_picture.url }}" alt="{{ message.sender.author.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                            {{ message.sender.author.name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <div class="message-sender">{{ message.sender.author.name }}</div>
+                            <div class="message-time">{{ message.sent_at|date:"g:i A" }}</div>
+                        </div>
+                        <div class="message-text">{{ message.content }}</div>
+                        <div class="message-status" id="status-{{ message.id }}">
+                            0 read
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-messages">
+                    <div class="no-messages-icon">💬</div>
+                    <h3>No messages yet</h3>
+                    <p>Start the conversation by sending the first message!</p>
+                </div>
+            {% endif %}
+            <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                Someone is typing...
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <form class="chat-input-form" id="message-form">
+                <textarea 
+                    class="message-input" 
+                    id="message-input" 
+                    placeholder="Type your message..." 
+                    rows="1"
+                    maxlength="1000"
+                ></textarea>
+                <button type="submit" class="send-btn" id="send-btn" disabled>➤</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+const groupId = {{ group.id }};
+const currentUser = '{{ user.username }}';
+const messagesContainer = document.getElementById('messages-container');
+const messageForm = document.getElementById('message-form');
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('send-btn');
+const typingIndicator = document.getElementById('typing-indicator');
+
+// WebSocket connection
+const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+const ws_path = ws_scheme + '://' + window.location.host + '/ws/messaging/';
+const socket = new WebSocket(ws_path);
+
+let typingTimeout;
+
+// Auto-resize textarea
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    
+    // Enable/disable send button
+    sendBtn.disabled = this.value.trim().length === 0;
+    
+    // Send typing indicator
+    if (this.value.trim().length > 0) {
+        socket.send(JSON.stringify({
+            type: 'typing',
+            group_id: groupId
+        }));
+        
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            socket.send(JSON.stringify({
+                type: 'stop_typing',
+                group_id: groupId
+            }));
+        }, 1000);
+    }
+});
+
+// Send message
+messageForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const message = messageInput.value.trim();
+    if (message) {
+        socket.send(JSON.stringify({
+            type: 'send_group_message',
+            group_id: groupId,
+            content: message
+        }));
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        sendBtn.disabled = true;
+    }
+});
+
+// WebSocket event handlers
+socket.onopen = function(e) {
+    console.log('WebSocket connected');
+};
+
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    
+    switch(data.type) {
+        case 'new_group_message':
+            if (data.group_id === groupId) {
+                addMessage(data.message);
+                scrollToBottom();
+            }
+            break;
+            
+        case 'group_message_read':
+            if (data.group_id === groupId) {
+                updateMessageReadStatus(data.message_id, data.read_count);
+            }
+            break;
+            
+        case 'user_typing':
+            if (data.group_id === groupId && data.user !== currentUser) {
+                showTypingIndicator(data.user);
+            }
+            break;
+            
+        case 'user_stop_typing':
+            if (data.group_id === groupId) {
+                hideTypingIndicator();
+            }
+            break;
+            
+        case 'user_status':
+            updateUserStatus(data.user, data.status);
+            break;
+    }
+};
+
+socket.onclose = function(e) {
+    console.log('WebSocket disconnected');
+};
+
+function addMessage(messageData) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${messageData.sender === currentUser ? 'own-message' : ''}`;
+    
+    const avatar = messageData.sender_avatar || messageData.sender_name.charAt(0).toUpperCase();
+    const avatarHtml = messageData.sender_profile_picture ? 
+        `<img src="${messageData.sender_profile_picture}" alt="${messageData.sender_name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+        avatar;
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            ${avatarHtml}
+        </div>
+        <div class="message-content">
+            <div class="message-header">
+                <div class="message-sender">${messageData.sender_name}</div>
+                <div class="message-time">${formatTime(messageData.sent_at)}</div>
+            </div>
+            <div class="message-text">${messageData.content}</div>
+            <div class="message-status" id="status-${messageData.id}">
+                0 read
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    
+    // Remove no messages indicator if it exists
+    const noMessages = messagesContainer.querySelector('.no-messages');
+    if (noMessages) {
+        noMessages.remove();
+    }
+}
+
+function updateMessageReadStatus(messageId, readCount) {
+    const statusElement = document.getElementById(`status-${messageId}`);
+    if (statusElement) {
+        statusElement.textContent = `${readCount} read`;
+    }
+}
+
+function showTypingIndicator(user) {
+    typingIndicator.textContent = `${user} is typing...`;
+    typingIndicator.style.display = 'block';
+    scrollToBottom();
+}
+
+function hideTypingIndicator() {
+    typingIndicator.style.display = 'none';
+}
+
+function updateUserStatus(username, status) {
+    const memberItems = document.querySelectorAll('.member-item');
+    memberItems.forEach(item => {
+        const memberName = item.querySelector('.member-name').textContent;
+        if (memberName.toLowerCase().includes(username.toLowerCase())) {
+            const indicator = item.querySelector('.online-indicator, .offline-indicator');
+            const statusText = item.querySelector('.member-status');
+            
+            if (status === 'online') {
+                if (indicator.classList.contains('offline-indicator')) {
+                    indicator.classList.remove('offline-indicator');
+                    indicator.classList.add('online-indicator');
+                }
+                statusText.textContent = 'Online';
+            } else {
+                if (indicator.classList.contains('online-indicator')) {
+                    indicator.classList.remove('online-indicator');
+                    indicator.classList.add('offline-indicator');
+                }
+                statusText.textContent = 'Offline';
+            }
+        }
+    });
+}
+
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+    });
+}
+
+function scrollToBottom() {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Initial scroll to bottom
+scrollToBottom();
+
+// Mark messages as read when they come into view
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const messageId = entry.target.dataset.messageId;
+            if (messageId) {
+                socket.send(JSON.stringify({
+                    type: 'mark_group_message_read',
+                    message_id: messageId,
+                    group_id: groupId
+                }));
+            }
+        }
+    });
+}, { threshold: 0.5 });
+
+// Observe existing messages
+document.querySelectorAll('.message').forEach(message => {
+    const messageId = message.dataset.messageId;
+    if (messageId) {
+        observer.observe(message);
+    }
+});
+</script>
+{% endblock %}

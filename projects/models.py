@@ -3,15 +3,15 @@ from django.db import models
 from django.core.exceptions import ValidationError
 import uuid
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 # The Project model represents a research or work project.
 class Project(models.Model):
     # Project title
     title = models.CharField(max_length=200)
     # Date the project was created
-    created= models.DateField()
+    created = models.DateField()
     # Team members involved in the project
-    team  = models.CharField(max_length=300)
+    team = models.CharField(max_length=300)
     # Project abstract, defaulting to a placeholder if not provided
     abstract = models.TextField(default="No abstract yet")
     # Duration or timeframe of the project
@@ -20,6 +20,39 @@ class Project(models.Model):
     domain = models.CharField(max_length=100)
     # Scientific case or justification for the project
     scientific_case = models.TextField()
+    # Keywords for AI matching
+    keywords = models.TextField(blank=True, help_text="Comma-separated keywords for AI matching")
+    # Project status
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('on_hold', 'On Hold'),
+        ('cancelled', 'Cancelled'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    # Project leader/principal investigator
+    principal_investigator = models.CharField(max_length=200, blank=True)
+    # Funding information
+    funding_source = models.CharField(max_length=200, blank=True)
+    # Project website
+    website = models.URLField(blank=True)
+    # Created timestamp
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Updated timestamp
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created']
+
+    def get_keywords_list(self):
+        """Get keywords as a list"""
+        if self.keywords:
+            return [keyword.strip() for keyword in self.keywords.split(',')]
+        return []
+
+    def get_publications_count(self):
+        """Get total number of publications for this project"""
+        return self.publications.count()
 
     # Returns the project title when the object is printed
     def __str__(self):
@@ -28,15 +61,42 @@ class Project(models.Model):
 # The Author model represents an individual author.
 class Author(models.Model):
     # Author's name must be unique; can be null or blank
-    name = models.CharField(max_length=200, unique=True,null=True, blank=True)
+    name = models.CharField(max_length=200, unique=True, null=True, blank=True)
     # Author's email address
-    email=models.EmailField()
-    
+    email = models.EmailField()
+    # Author's profile picture
     profile_picture = models.ImageField(upload_to='author_pics/', blank=True, null=True)
+    # Email preferences
+    email_notifications = models.BooleanField(default=True)
+    # Research interests for AI matching
+    research_interests = models.TextField(blank=True, help_text="Comma-separated research interests")
+    # Institution/affiliation
+    institution = models.CharField(max_length=200, blank=True)
+    # Department
+    department = models.CharField(max_length=200, blank=True)
+    # ORCID ID
+    orcid_id = models.CharField(max_length=50, blank=True)
+    # Created timestamp
+    created_at = models.DateTimeField(default=timezone.now)
+    # Updated timestamp
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def get_publications_count(self):
+        """Get total number of publications by this author"""
+        return self.primary_publications.count() + self.collaborated_publications.count()
+
+    def get_research_interests_list(self):
+        """Get research interests as a list"""
+        if self.research_interests:
+            return [interest.strip() for interest in self.research_interests.split(',')]
+        return []
 
     # Returns the author's name when the object is printed
     def __str__(self):
-        return self.name
+        return self.name or f"Author {self.id}"
 
 # List of publication types as choices for the Publication model
 PUBLICATION_TYPES = [
@@ -74,8 +134,8 @@ class Publication(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='publications')
     # Title of the publication
     title = models.CharField(max_length=200)
-    # Author field, intended to reference Author model, but incorrectly defined (should be ForeignKey or ManyToMany)
-    author = models.CharField(Author,max_length=200)
+    # Primary author of the publication
+    primary_author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='primary_publications',null=True, blank=True)
     # URL to the publication (optional)
     url = models.URLField(blank=True)
     # Year of publication
@@ -87,20 +147,43 @@ class Publication(models.Model):
     # Publication type (from the choices defined above)
     type = models.CharField(max_length=100, choices=PUBLICATION_TYPES)
     # Collaborators, can be multiple authors
-    collaborators = models.ManyToManyField(Author)
+    collaborators = models.ManyToManyField(Author, related_name='collaborated_publications', blank=True)
     # Timestamp for when the publication was uploaded
     uploaded_at = models.DateTimeField(auto_now_add=True)
     # Abstract text, with a default value
     abstract = models.TextField(default="No abstract yet")
+    # Email notification status
+    email_sent = models.BooleanField(default=False)
+    # AI matching status
+    ai_processed = models.BooleanField(default=False)
+    # AI confidence score
+    ai_confidence = models.FloatField(null=True, blank=True)
 
     # Custom validation: ensures either file or URL is provided for the publication
     def clean(self):
         if not self.file and not self.url:
             raise ValidationError("Either upload a file or provide a download link.")
 
+    def get_all_authors(self):
+        """Get all authors (primary + collaborators)"""
+        authors = [self.primary_author]
+        authors.extend(self.collaborators.all())
+        return authors
+    
+    def get_authors_display(self):
+        """Get formatted string of all authors"""
+        authors = self.get_all_authors()
+        if len(authors) == 1:
+            return authors[0].name
+        elif len(authors) == 2:
+            return f"{authors[0].name} and {authors[1].name}"
+        else:
+            author_names = [author.name for author in authors[:-1]]
+            return f"{', '.join(author_names)}, and {authors[-1].name}"
+
     # Returns the publication title when the object is printed
     def __str__(self):
-        return self.title
+        return f"{self.title} by {self.primary_author.name}"
 
 # HarvestMatchCandidate model represents a possible match between a publication and a project, suggested by AI.
 class HarvestMatchCandidate(models.Model):
@@ -191,18 +274,121 @@ class MessageRequest(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_requests')
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
     sent_at = models.DateTimeField(auto_now_add=True)
+    initial_message = models.TextField(blank=True, help_text="Initial message with the request")
+    
+    class Meta:
+        unique_together = ['sender', 'recipient']
+        ordering = ['-sent_at']
+    
+    def __str__(self):
+        return f"{self.sender.username} → {self.recipient.username} ({self.status})"
 
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_sent')
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_received')
-    content = models.TextField()
+    content = models.TextField( null=True, blank=True)
     sent_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    request = models.ForeignKey(MessageRequest, on_delete=models.CASCADE)
+    request = models.ForeignKey(MessageRequest, on_delete=models.CASCADE, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['sent_at']
+    
+    def __str__(self):
+        return f"{self.sender.username} → {self.recipient.username}: {self.content[:50]}"
+    
+    def mark_as_read(self):
+        self.is_read = True
+        self.save()
     
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    message = models.ForeignKey('Message', on_delete=models.CASCADE)
+    NOTIFICATION_TYPES = [
+        ('message_request', 'Message Request'),
+        ('message_received', 'Message Received'),
+        ('message_read', 'Message Read'),
+        ('request_approved', 'Request Approved'),
+        ('request_rejected', 'Request Rejected'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, null=True, blank=True)
+    message_request = models.ForeignKey(MessageRequest, on_delete=models.CASCADE, null=True, blank=True)
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    content = models.TextField( null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    notification_type = models.CharField(max_length=50, default="unread_message")
+    is_email_sent = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.notification_type} for {self.user.username}: {self.title}"
+    
+    def mark_as_read(self):
+        self.is_read = True
+        self.save()
+
+# ========================
+# GROUP MESSAGING MODELS
+# ========================
+
+class GroupChat(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_groups')
+    members = models.ManyToManyField(User, related_name='group_memberships')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Group: {self.name}"
+    
+    def get_members_count(self):
+        return self.members.count()
+    
+    def is_member(self, user):
+        return self.members.filter(id=user.id).exists()
+
+class GroupMessage(models.Model):
+    group = models.ForeignKey(GroupChat, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_messages_sent')
+    content = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    is_read_by = models.ManyToManyField(User, related_name='read_group_messages', blank=True)
+    
+    class Meta:
+        ordering = ['sent_at']
+    
+    def __str__(self):
+        return f"{self.sender.username} in {self.group.name}: {self.content[:50]}"
+    
+    def mark_as_read_by(self, user):
+        self.is_read_by.add(user)
+    
+    def get_read_count(self):
+        return self.is_read_by.count()
+
+class GroupInvitation(models.Model):
+    group = models.ForeignKey(GroupChat, on_delete=models.CASCADE, related_name='invitations')
+    inviter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_group_invitations')
+    invitee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_group_invitations')
+    message = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined')
+    ], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['group', 'invitee']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Invitation to {self.invitee.username} for {self.group.name}"

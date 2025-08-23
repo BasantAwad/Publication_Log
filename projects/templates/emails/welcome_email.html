@@ -1,31 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Welcome to Publication Log</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Publication Log</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .welcome-message {
+            background-color: #f8fff9;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .features {
+            background-color: #e8f4fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .features h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-  <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <h2 style="color: #0a497b;">Welcome {{ researcher_name }}!</h2>
-
-    <p>
-      We're excited to have you join the <strong>Publication Log</strong> platform. 
-      You can now start tracking your research projects and uploading your publications easily and securely.
-    </p>
-
-    <p>
-      To get started, click the button below to upload your first publication:
-    </p>
-
-    <p style="text-align: center; margin: 30px 0;">
-      <a href="{{ upload_link }}" style="background-color: #0a497b; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Upload Publication</a>
-    </p>
-
-    <p>
-      If you have any questions or need help, don’t hesitate to reach out. We’re here to help!
-    </p>
-
-    <p style="font-size: 13px; color: #777;">This is an automated message from the Publication Log system.</p>
-  </div>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>🎉 Welcome to Publication Log!</h1>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                <div class="welcome-icon">👋</div>
+                <div style="font-weight: 600; color: #28a745; font-size: 18px;">Welcome {{ researcher_name }}!</div>
+            </div>
+            
+            <p>We're excited to have you join the <strong>Publication Log</strong> platform!</p>
+            
+            <p>You can now start tracking your research projects and uploading your publications easily and securely.</p>
+            
+            <div class="features">
+                <h3>🚀 What You Can Do</h3>
+                <ul>
+                    <li>Upload and manage your research publications</li>
+                    <li>Track project progress and deadlines</li>
+                    <li>Connect with other researchers</li>
+                    <li>Receive collaboration opportunities</li>
+                    <li>Access your research dashboard</li>
+                </ul>
+            </div>
+            
+            <p>To get started, click the button below to upload your first publication:</p>
+            
+            <div class="action-buttons">
+                <a href="{{ upload_link }}" class="btn">📄 Upload Publication</a>
+            </div>
+            
+            <p style="color: #6c757d; font-size: 14px;">
+                If you have any questions or need help, don't hesitate to reach out. We're here to help!
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from the Publication Log system</p>
+            <p>© 2024 Publication Log. All rights reserved.</p>
+        </div>
+    </div>
 </body>
 </html>

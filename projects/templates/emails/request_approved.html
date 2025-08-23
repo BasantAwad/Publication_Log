@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Alert</title>
+    <title>Message Request Approved</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,7 +22,7 @@
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -35,28 +35,27 @@
         .content {
             padding: 40px 30px;
         }
-        .alert-box {
-            background-color: #fff3cd;
-            border: 2px solid #fd7e14;
+        .success-info {
+            background-color: #f8fff9;
+            border: 2px solid #28a745;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
-        }
-        .alert-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
             text-align: center;
         }
-        .alert-message {
-            background-color: #f8f9fa;
-            border-left: 4px solid #fd7e14;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 8px 8px 0;
+        .approver-name {
+            font-weight: 600;
+            color: #28a745;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
         }
         .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 12px 24px;
             text-decoration: none;
@@ -83,61 +82,61 @@
             color: #6c757d;
             font-size: 14px;
         }
-        .priority-high {
-            background-color: #f8d7da;
-            border-color: #dc3545;
+        .timestamp {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 5px;
         }
-        .priority-medium {
-            background-color: #fff3cd;
-            border-color: #fd7e14;
+        .next-steps {
+            background-color: #e8f4fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
         }
-        .priority-low {
-            background-color: #d1ecf1;
-            border-color: #17a2b8;
+        .next-steps h3 {
+            color: #667eea;
+            margin-top: 0;
         }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>⚠️ Important System Notification</h1>
+            <h1>🎉 Message Request Approved!</h1>
         </div>
         
         <div class="content">
-            <p>Dear <strong>{{ recipient_name }}</strong>,</p>
-            
-            <div class="alert-box">
-                <div class="alert-icon">🔔</div>
-                <p style="text-align: center; margin: 0; font-weight: 600; color: #856404;">
-                    System Alert - Action Required
-                </p>
+            <div class="success-info">
+                <div class="success-icon">✅</div>
+                <div class="approver-name">{{ approver_name }}</div>
+                <div class="timestamp">Approved at {{ timestamp }}</div>
             </div>
             
-            <div class="alert-message">
-                <p style="margin: 0; font-style: italic; color: #666;">
-                    "{{ alert_message }}"
-                </p>
-            </div>
+            <p>Great news! <strong>{{ approver_name }}</strong> has approved your message request.</p>
             
-            {% if action_link %}
-            <p>Please take the necessary action by clicking the button below:</p>
+            <p>You can now start messaging each other and collaborate on research projects.</p>
+            
+            <div class="next-steps">
+                <h3>What's Next?</h3>
+                <ul>
+                    <li>Start a conversation about research collaboration</li>
+                    <li>Share publications and ideas</li>
+                    <li>Discuss potential joint projects</li>
+                    <li>Exchange academic insights</li>
+                </ul>
+            </div>
             
             <div class="action-buttons">
-                <a href="{{ action_link }}" class="btn">🔧 Take Action</a>
+                <a href="{{ site_url }}/messaging/" class="btn">💬 Start Chatting</a>
             </div>
-            {% endif %}
             
             <p style="color: #6c757d; font-size: 14px;">
-                If you have any questions or need assistance, please contact our support team.
-            </p>
-            
-            <p style="color: #6c757d; font-size: 14px;">
-                This is an automated system notification. Please do not reply to this email.
+                You can access the messaging interface anytime from your dashboard.
             </p>
         </div>
         
         <div class="footer">
-            <p>— Publication Log Team</p>
+            <p>This is an automated notification from Publication Log</p>
             <p>© 2024 Publication Log. All rights reserved.</p>
         </div>
     </div>

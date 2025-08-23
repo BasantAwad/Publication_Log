@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create New Group{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-group-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+    }
+
+    .create-form {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section h3 {
+        color: #495057;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .members-selection {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        background: #f8f9fa;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .member-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .member-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .member-item.selected {
+        border-color: #28a745;
+        background: #f8fff9;
+    }
+
+    .member-checkbox {
+        margin-right: 15px;
+        transform: scale(1.2);
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #6c757d;
+        margin-right: 15px;
+    }
+
+    .member-info {
+        flex: 1;
+    }
+
+    .member-name {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 2px;
+    }
+
+    .member-institution {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .selected-members {
+        margin-top: 20px;
+        padding: 15px;
+        background: #e8f5e8;
+        border-radius: 8px;
+        border: 1px solid #c3e6cb;
+    }
+
+    .selected-members h4 {
+        color: #155724;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .selected-member-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .selected-member-tag {
+        background: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .selected-member-tag .remove-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 0.8rem;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .selected-member-tag .remove-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #e9ecef;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a6fd8;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    @media (max-width: 768px) {
+        .create-form {
+            padding: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .member-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .member-checkbox {
+            margin-right: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-group-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Create New Group</h1>
+        <p>Start a group chat with your research collaborators</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Create Form -->
+    <form method="post" class="create-form">
+        {% csrf_token %}
+
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h3>📝 Group Information</h3>
+            <div class="form-group">
+                <label for="name" class="form-label">Group Name *</label>
+                <input type="text" id="name" name="name" class="form-control" required placeholder="e.g., Research Team Alpha">
+                <div class="form-text">Choose a descriptive name for your group</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description" class="form-control" rows="4" placeholder="Describe the purpose of this group..."></textarea>
+                <div class="form-text">Optional description of the group's purpose</div>
+            </div>
+        </div>
+
+        <!-- Member Selection -->
+        <div class="form-section">
+            <h3>👥 Select Members</h3>
+            <div class="search-box">
+                <input type="text" id="member-search" placeholder="Search members..." onkeyup="filterMembers()">
+            </div>
+            
+            <div class="members-selection">
+                {% for potential_member in potential_members %}
+                <div class="member-item" data-name="{{ potential_member.author.name|lower }}">
+                    <input type="checkbox" name="members" value="{{ potential_member.id }}" class="member-checkbox" onchange="updateSelectedMembers()">
+                    <div class="member-avatar">
+                        {% if potential_member.author.profile_picture %}
+                            <img src="{{ potential_member.author.profile_picture.url }}" alt="{{ potential_member.author.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                            {{ potential_member.author.name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="member-info">
+                        <div class="member-name">{{ potential_member.author.name }}</div>
+                        {% if potential_member.author.institution %}
+                        <div class="member-institution">{{ potential_member.author.institution }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="selected-members" id="selected-members" style="display: none;">
+                <h4>Selected Members (<span id="selected-count">0</span>)</h4>
+                <div class="selected-member-tags" id="selected-tags"></div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">✅ Create Group</button>
+            <a href="{% url 'group_messaging_home' %}" class="btn btn-secondary">❌ Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function filterMembers() {
+    const searchTerm = document.getElementById('member-search').value.toLowerCase();
+    const memberItems = document.querySelectorAll('.member-item');
+    
+    memberItems.forEach(item => {
+        const memberName = item.getAttribute('data-name');
+        if (memberName.includes(searchTerm)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function updateSelectedMembers() {
+    const checkboxes = document.querySelectorAll('input[name="members"]:checked');
+    const selectedMembersDiv = document.getElementById('selected-members');
+    const selectedTagsDiv = document.getElementById('selected-tags');
+    const selectedCountSpan = document.getElementById('selected-count');
+    
+    if (checkboxes.length > 0) {
+        selectedMembersDiv.style.display = 'block';
+        selectedCountSpan.textContent = checkboxes.length;
+        
+        selectedTagsDiv.innerHTML = '';
+        checkboxes.forEach(checkbox => {
+            const memberItem = checkbox.closest('.member-item');
+            const memberName = memberItem.querySelector('.member-name').textContent;
+            
+            const tag = document.createElement('span');
+            tag.className = 'selected-member-tag';
+            tag.innerHTML = `
+                ${memberName}
+                <button type="button" class="remove-btn" onclick="removeMember('${checkbox.value}')">×</button>
+            `;
+            selectedTagsDiv.appendChild(tag);
+        });
+    } else {
+        selectedMembersDiv.style.display = 'none';
+    }
+}
+
+function removeMember(memberId) {
+    const checkbox = document.querySelector(`input[name="members"][value="${memberId}"]`);
+    if (checkbox) {
+        checkbox.checked = false;
+        updateSelectedMembers();
+    }
+}
+
+// Initialize selected members display
+updateSelectedMembers();
+</script>
+{% endblock %}
