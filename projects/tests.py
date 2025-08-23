@@ -15,7 +15,7 @@ from django.conf import settings
 
 TEST_CONFIG = {
     # Optional: if your Publication model is in a specific app, set it here (e.g., "publications")
-    "APP_LABEL": None,
+    "APP_LABEL": "projects",
     "PUBLICATION_MODEL_NAME": "Publication",
     # Field discovery hints: we’ll try these names first when building payloads
     "FIELD_HINTS": {
