@@ -21,6 +21,7 @@
      <li><a href="{% url 'login' %}">Login</a></li>
      <li><a href="{% url 'publication_list' %}">Publications</a></li>
      {% if user.is_authenticated %}
+     <li><a href="{% url 'charts_dashboard' %}">Charts Dashboard</a></li>
        <li><a href="{% url 'messaging_home' %}" title="Messages">💬</a></li>
      {% endif %}
      {% if user.is_superuser %}

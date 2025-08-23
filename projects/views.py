@@ -18,6 +18,7 @@ from django.utils import timezone
 from datetime import timedelta
 import json
 
+
 from projects.models import MatchRequest, AVATAR_CHOICES
 
 from .email import notify_invalid_publication_url,send_welcome_email
@@ -29,6 +30,7 @@ from .forms import (
     UserUpdateForm,
 )
 from .models import Message, MessageRequest, Notification, Project, Publication, UserProfile
+from .models import Author, GroupChat, GroupInvitation, GroupMessage
 
 # ========================
 # Project Views
@@ -954,3 +956,32 @@ def decline_group_invitation(request, invitation_id):
         messages.info(request, f'You declined the invitation to "{invitation.group.name}"')
     
     return redirect('group_messaging_home')
+
+# ----------------------
+#  Charts Dashboard
+# ----------------------
+@login_required
+def charts_dashboard(request):
+    """Render the charts dashboard page"""
+    return render(request, "Charts/charts_dashboard.html")
+
+
+@login_required
+def publications_per_year(request):
+    """Return JSON data for publications per year"""
+    data = (
+        Publication.objects.values("year")
+        .annotate(total=Count("id"))
+        .order_by("year")
+    )
+    return JsonResponse(list(data), safe=False)
+
+@login_required
+def top_authors(request):
+    """Return JSON data for top 5 authors"""
+    data = (
+        Author.objects.annotate(total=Count("primary_publications"))
+        .order_by("-total")[:5]
+        .values("name", "total")
+    )
+    return JsonResponse(list(data), safe=False)
