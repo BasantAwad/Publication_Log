@@ -85,8 +85,16 @@
                                 {{ pub.title }}
                             </a>
                             <p class="pub-meta">{{ pub.year }} | {{ pub.type }}</p>
-                            {% if pub.authors.exists %}
-                                <p class="pub-meta">👥 {{ pub.authors.all|join:", " }}</p>
+                            {% if pub.primary_author or pub.collaborators.all %}
+                                <p class="pub-meta">👥 
+                                    {% if pub.primary_author %}
+                                        <a href="{% url 'author_profile' pub.primary_author.id %}" style="color: #2563eb; text-decoration: none;">{{ pub.primary_author.name }}</a>
+                                        {% if pub.collaborators.all %}, {% endif %}
+                                    {% endif %}
+                                    {% for collaborator in pub.collaborators.all %}
+                                        <a href="{% url 'author_profile' collaborator.id %}" style="color: #2563eb; text-decoration: none;">{{ collaborator.name }}</a>{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </p>
                             {% else %}
                                 <p class="text-sm italic text-gray-400">No authors</p>
                             {% endif %}
