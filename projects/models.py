@@ -166,14 +166,18 @@ class Publication(models.Model):
 
     def get_all_authors(self):
         """Get all authors (primary + collaborators)"""
-        authors = [self.primary_author]
+        authors = []
+        if self.primary_author:
+            authors.append(self.primary_author)
         authors.extend(self.collaborators.all())
         return authors
     
     def get_authors_display(self):
         """Get formatted string of all authors"""
         authors = self.get_all_authors()
-        if len(authors) == 1:
+        if not authors:
+            return "No authors"
+        elif len(authors) == 1:
             return authors[0].name
         elif len(authors) == 2:
             return f"{authors[0].name} and {authors[1].name}"
@@ -183,7 +187,12 @@ class Publication(models.Model):
 
     # Returns the publication title when the object is printed
     def __str__(self):
-        return f"{self.title} by {self.primary_author.name}"
+        if self.primary_author:
+            return f"{self.title} by {self.primary_author.name}"
+        elif self.collaborators.exists():
+            return f"{self.title} by {', '.join([c.name for c in self.collaborators.all()])}"
+        else:
+            return f"{self.title} (no authors)"
 
 # HarvestMatchCandidate model represents a possible match between a publication and a project, suggested by AI.
 class HarvestMatchCandidate(models.Model):
