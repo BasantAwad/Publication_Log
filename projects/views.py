@@ -16,9 +16,11 @@ from django.core.mail import send_mail
 from django.db.models import Count, Max
 from django.utils import timezone
 from datetime import timedelta
+import os
+from openai import OpenAI
 import json
 
-
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 from projects.models import MatchRequest, AVATAR_CHOICES
 
 from .email import notify_invalid_publication_url,send_welcome_email
@@ -985,3 +987,37 @@ def top_authors(request):
         .values("name", "total")
     )
     return JsonResponse(list(data), safe=False)
+# ========================
+# Chatbot RAG View
+# ========================
+@csrf_exempt
+def rag_ask(request):
+    """
+    API endpoint for chatbot (RAG or LLM).
+    Expects a POST with JSON {"message": "..."} and returns {"reply": "..."}.
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            user_message = data.get("message", "")
+
+            # --- Example using OpenAI GPT-4 ---
+            from openai import OpenAI
+            import os
+
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": user_message}],
+                temperature=0.7
+            )
+
+            bot_reply = response.choices[0].message.content
+
+            return JsonResponse({"reply": bot_reply})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
