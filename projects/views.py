@@ -16,8 +16,11 @@ from django.core.mail import send_mail
 from django.db.models import Count, Max
 from django.utils import timezone
 from datetime import timedelta
+import os
+from openai import OpenAI
 import json
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 from projects.models import MatchRequest, AVATAR_CHOICES
 
 from .email import notify_invalid_publication_url,send_welcome_email
@@ -29,6 +32,7 @@ from .forms import (
     UserUpdateForm,
 )
 from .models import Message, MessageRequest, Notification, Project, Publication, UserProfile
+from .models import Author, GroupChat, GroupInvitation, GroupMessage
 
 # ========================
 # Project Views
@@ -954,3 +958,66 @@ def decline_group_invitation(request, invitation_id):
         messages.info(request, f'You declined the invitation to "{invitation.group.name}"')
     
     return redirect('group_messaging_home')
+
+# ----------------------
+#  Charts Dashboard
+# ----------------------
+@login_required
+def charts_dashboard(request):
+    """Render the charts dashboard page"""
+    return render(request, "Charts/charts_dashboard.html")
+
+
+@login_required
+def publications_per_year(request):
+    """Return JSON data for publications per year"""
+    data = (
+        Publication.objects.values("year")
+        .annotate(total=Count("id"))
+        .order_by("year")
+    )
+    return JsonResponse(list(data), safe=False)
+
+@login_required
+def top_authors(request):
+    """Return JSON data for top 5 authors"""
+    data = (
+        Author.objects.annotate(total=Count("primary_publications"))
+        .order_by("-total")[:5]
+        .values("name", "total")
+    )
+    return JsonResponse(list(data), safe=False)
+# ========================
+# Chatbot RAG View
+# ========================
+@csrf_exempt
+def rag_ask(request):
+    """
+    API endpoint for chatbot (RAG or LLM).
+    Expects a POST with JSON {"message": "..."} and returns {"reply": "..."}.
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            user_message = data.get("message", "")
+
+            # --- Example using OpenAI GPT-4 ---
+            from openai import OpenAI
+            import os
+
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": user_message}],
+                temperature=0.7
+            )
+
+            bot_reply = response.choices[0].message.content
+
+            return JsonResponse({"reply": bot_reply})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)

@@ -51,4 +51,11 @@ urlpatterns = [
     path('group-messaging/<int:group_id>/invite/', views.invite_to_group, name='invite_to_group'),
     path('group-messaging/invitation/<int:invitation_id>/accept/', views.accept_group_invitation, name='accept_group_invitation'),
     path('group-messaging/invitation/<int:invitation_id>/decline/', views.decline_group_invitation, name='decline_group_invitation'),
+
+     # Charts & analytics
+    path('charts/', views.charts_dashboard, name='charts_dashboard'),
+    path('api/publications_per_year/', views.publications_per_year, name='publications_per_year'),
+    path('api/top_authors/', views.top_authors, name='top_authors'),
+    #chatbot
+    path("rag-ask/", views.rag_ask, name="rag_ask"),
 ]

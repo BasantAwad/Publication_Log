@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-center my-4">📊 Charts Dashboard</h2>
+
+<!-- Grid layout for charts -->
+<div class="charts-grid">
+  <div class="chart-card">
+    <canvas id="pubsYearChart"></canvas>
+  </div>
+  <div class="chart-card">
+    <canvas id="topAuthorsChart"></canvas>
+  </div>
+</div>
+
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 1000px;
+    margin: auto;
+  }
+  .chart-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  canvas {
+    max-width: 100% !important;
+    max-height: 350px !important;
+  }
+</style>
+
+<script>
+  // === Chart 1: Publications per Year ===
+  fetch("{% url 'publications_per_year' %}")
+    .then(response => response.json())
+    .then(data => {
+      const labels = data.map(item => item.year);
+      const values = data.map(item => item.total);
+
+      new Chart(document.getElementById("pubsYearChart"), {
+        type: "pie",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Number of Publications",
+            data: values,
+            backgroundColor: [
+              "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF6384"
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: { display: true, text: "Publications per Year" },
+            legend: { position: "bottom" }
+          }
+        }
+      });
+    });
+
+  // === Chart 2: Top 5 Authors ===
+  fetch("{% url 'top_authors' %}")
+    .then(response => response.json())
+    .then(data => {
+      const labels = data.map(item => item.name);
+
+      const values = data.map(item => item.total);
+
+      new Chart(document.getElementById("topAuthorsChart"), {
+        type: "doughnut",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Number of Publications",
+            data: values,
+            backgroundColor: [
+              "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+  title: { display: true, text: "Top 5 Authors" },
+  legend: {
+    position: "bottom",
+    labels: {
+      color: "#000",   
+      boxWidth: 20,    // حجم المربع الصغير
+      padding: 15,     // مسافة بين العناصر
+      font: {
+        size: 14       // حجم الخط
+      }
+    }
+  }
+}
+
+        }
+      });
+    });
+</script>
+{% endblock %}
