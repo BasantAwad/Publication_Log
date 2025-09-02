@@ -90,6 +90,8 @@ DATABASES = {
     }
 }
 
+USE_TZ = True
+TIME_ZONE = "UTC"   # or your local zone
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

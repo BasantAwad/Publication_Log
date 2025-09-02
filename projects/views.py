@@ -85,6 +85,12 @@ def project_detail(request, pk):
         'publications': publications
     })
 
+
+# ========================
+# Publication Views
+# ========================
+
+
 @login_required
 def add_publication(request, project_id):
     """
@@ -110,10 +116,6 @@ def add_publication(request, project_id):
         form = PublicationForm(project=project)
 
     return render(request, 'publications/add_publication.html', {'form': form, 'project': project})
-
-# ========================
-# Publication Views
-# ========================
 
 def publication_detail(request, pk):
     """

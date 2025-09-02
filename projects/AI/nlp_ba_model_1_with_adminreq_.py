@@ -46,13 +46,13 @@ def match_projects_and_papers(publication=None, user=None, threshold=0.65, top_k
     # Clean and preprocess project fields
     projects_df["clean_title"] = projects_df["title"].apply(clean_text)
     projects_df["normalized_authors"] = projects_df["team"].apply(normalize_authors)
-    projects_df["created"] = pd.to_datetime(projects_df["created"])
+    projects_df["created"] = pd.to_datetime(projects_df["created"], utc=True)
 
     # Clean and preprocess paper fields
     papers_df["clean_title"] = papers_df["title"].apply(clean_text)
     papers_df["clean_abstract"] = papers_df["abstract"].apply(clean_text)
     papers_df["normalized_authors"] = papers_df["collaborators"].apply(normalize_authors)
-    papers_df["published_date"] = pd.to_datetime(papers_df["uploaded_at"])
+    papers_df["published_date"] = pd.to_datetime(papers_df["uploaded_at"], utc=True)
     papers_df["combined_text"] = papers_df["clean_title"] + ". " + papers_df["clean_abstract"]
 
     # Load a pre-trained NLP sentence transformer model for semantic similarity
