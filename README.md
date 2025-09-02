@@ -14,7 +14,6 @@ A web-based platform for managing, tracking, and archiving research publications
 - [Usage](#usage)
 - [Roles & Permissions](#roles--permissions)
 - [Development & Contribution](#development--contribution)
-- [License](#license)
 
 ---
 
@@ -159,13 +158,6 @@ The main structure of the repository:
 - Follow standard Django best practices for feature or bugfix branches.
 
 Contributions are welcome! Please open an issue or submit a pull request.
-
----
-
-## License
-
-MIT License. See [LICENSE](LICENSE) for details.
-
 ---
 
 > For more details and the latest updates, visit the [GitHub repository](https://github.com/BasantAwad/Publication_Log).
