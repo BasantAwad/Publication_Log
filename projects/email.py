@@ -23,9 +23,9 @@ from .utils import is_valid_download_link
 # EMAIL CONFIGURATION
 # ========================
 # SENDER: The sender's Gmail address.
-SENDER = 'basantawad014@gmail.com'
+SENDER = ''
 # EMAIL_PASSWORD: App password generated for Gmail (never use your real password!).
-EMAIL_PASSWORD = 'yuef auqt aohq razb'  # App password
+EMAIL_PASSWORD = ''  # App password
 
 # RECEIVER_NAME: Default receiver name. Used for template personalization. 
 # (Note: This is set from Publication.primary_author, but is later overridden by logic per email.)
