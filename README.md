@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/BasantAwad/BasantAwad/main/assets/basant-terminal-banner.png" alt="Terminal-inspired project banner" width="100%" />
+</p>
+
 # Publication Log Platform
 
 A Django-based research-publication workflow for collecting, normalizing, searching, and archiving publication metadata. The project was designed around the Bibliotheca Alexandrina research-publication use case.
